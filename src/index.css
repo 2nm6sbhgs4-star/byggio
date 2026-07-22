@@ -1,0 +1,66 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Arial, Helvetica, sans-serif; background: #f8fafc; color: #0f172a; }
+
+/* Navbar */
+.navbar { display: flex; justify-content: space-between; align-items: center; padding: 30px 80px; }
+.logo { font-size: 32px; font-weight: 800; color: #f97316; text-decoration: none; }
+.nav-button { background: transparent; border: 1px solid #cbd5e1; padding: 12px 25px; border-radius: 30px; }
+
+/* Hero */
+.hero { min-height: 100vh; padding: 30px 80px; background: linear-gradient(135deg, #f8fafc, #e2e8f0); }
+.hero-content { max-width: 800px; margin: 160px auto; text-align: center; }
+.hero h1 { font-size: 64px; line-height: 1.1; }
+.hero h1 span { color: #f97316; }
+.hero p { margin-top: 25px; font-size: 22px; color: #475569; }
+.main-button { margin-top: 40px; padding: 18px 40px; border: none; border-radius: 50px; background: #f97316; color: white; font-size: 18px; cursor: pointer; transition: transform 0.2s; }
+.main-button:hover { transform: translateY(-2px); }
+
+/* Project cards */
+.projects { padding: 80px; text-align: center; }
+.projects h2 { font-size: 36px; margin-bottom: 40px; }
+.project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto; }
+.project-card { text-decoration: none; color: inherit; background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px 24px; text-align: center; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
+.project-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08); border-color: #f97316; }
+.project-card .icon { font-size: 40px; margin-bottom: 12px; }
+.project-card h3 { font-size: 20px; margin-bottom: 8px; }
+.project-card p { font-size: 15px; color: #64748b; }
+
+/* Project page */
+.project-page { max-width: 700px; margin: 0 auto; padding: 60px 40px; text-align: center; }
+.back-link { display: inline-block; margin-bottom: 40px; text-decoration: none; color: #475569; font-size: 15px; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 30px; transition: border-color 0.2s, color 0.2s; }
+.back-link:hover { border-color: #f97316; color: #f97316; }
+.project-page .icon { font-size: 64px; margin-bottom: 16px; }
+.project-page h1 { font-size: 42px; margin-bottom: 16px; }
+.project-page p { font-size: 18px; color: #475569; }
+
+/* Calculator */
+.calculator { margin-top: 40px; text-align: left; background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; }
+.calculator h2 { font-size: 22px; margin-bottom: 24px; text-align: center; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.form-grid label { display: flex; flex-direction: column; font-size: 14px; color: #475569; gap: 6px; }
+.form-grid input { padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; }
+.form-grid input:focus { outline: none; border-color: #f97316; }
+.result-box { margin-top: 28px; padding-top: 24px; border-top: 1px solid #e2e8f0; }
+.result-box h3 { margin-bottom: 16px; }
+.result-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 16px; }
+.disclaimer { margin-top: 16px; font-size: 13px; color: #94a3b8; }
+.coming-soon { margin-top: 40px; padding: 40px; background: white; border: 1px solid #e2e8f0; border-radius: 16px; color: #64748b; }
+
+/* Variant select */
+.variant-select { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #475569; margin-bottom: 24px; max-width: 300px; }
+.variant-select select { padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; background: white; }
+.variant-select select:focus { outline: none; border-color: #f97316; }
+
+/* Shopping list */
+.shopping-box { margin-top: 28px; padding-top: 24px; border-top: 1px solid #e2e8f0; }
+.shopping-box h3 { margin-bottom: 16px; }
+.shopping-box .qty { font-size: 13px; color: #94a3b8; font-weight: normal; }
+.total-row { margin-top: 8px; padding-top: 12px; border-top: 2px solid #0f172a; font-size: 18px; }
+
+/* Step illustrations */
+.step-illustration { width: 100%; max-width: 200px; margin: 0 0 10px 0; }
+.step-illustration svg { width: 100%; height: auto; display: block; }
+.guide-list li { display: flex; flex-direction: column; }
+
+.form-grid select { padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; background: white; }
+.form-grid select:focus { outline: none; border-color: #f97316; }
