@@ -79,7 +79,7 @@ function PublishRequestForm({ projectSlug, projectTitle, variantLabel, inputValu
           <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={3} />
         </label>
         <div className="publish-buttons">
-          <button type="button" className="cookie-decline" onClick={onClose}>Avbryt</button>
+          <button type="button" className="diy-decline" onClick={onClose}>Avbryt</button>
           <button type="submit" className="main-button" disabled={submitting}>
             {submitting ? 'Skickar...' : 'Skicka förfrågan'}
           </button>
