@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { onAuthStateChanged, signInWithRedirect, signOut, type User } from 'firebase/auth'
+import { onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut, type User } from 'firebase/auth'
 import { auth, googleProvider } from './firebase'
 
 type AuthContextType = {
@@ -16,6 +16,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          console.log('Redirect-inloggning lyckades:', result.user)
+        }
+      })
+      .catch((error) => {
+        console.error('Redirect-inloggning misslyckades:', error.code, error.message)
+      })
+
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u)
       setLoading(false)
