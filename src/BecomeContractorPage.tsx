@@ -8,7 +8,7 @@ function BecomeContractorPage() {
   const { user, loading, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
   const [checking, setChecking] = useState(true)
-  const [alreadyRegistered, setAlreadyRegistered] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const [companyName, setCompanyName] = useState('')
   const [orgNumber, setOrgNumber] = useState('')
@@ -21,7 +21,14 @@ function BecomeContractorPage() {
   useEffect(() => {
     if (!user) { setChecking(false); return }
     getContractorProfile(user.uid).then((profile) => {
-      setAlreadyRegistered(!!profile)
+      if (profile) {
+        setIsEditing(true)
+        setCompanyName(profile.companyName)
+        setOrgNumber(profile.orgNumber)
+        setPhone(profile.phone)
+        setPostnummer(profile.postnummer)
+        setTradeTypes(profile.tradeTypes)
+      }
       setChecking(false)
     })
   }, [user])
@@ -60,20 +67,24 @@ function BecomeContractorPage() {
     )
   }
 
-  if (done || alreadyRegistered) {
+  if (done) {
     return (
       <div className="project-page">
-        <h1>Du är registrerad!</h1>
-        <p>Ditt företag är kopplat till ditt konto. Du kommer att se matchande förfrågningar när den funktionen är på plats.</p>
-        <button className="main-button" onClick={() => navigate('/')}>Till startsidan</button>
+        <h1>{isEditing ? 'Uppgifter uppdaterade!' : 'Du är registrerad!'}</h1>
+        <p>Ditt företag är kopplat till ditt konto.</p>
+        <button className="main-button" onClick={() => navigate('/hantverkarpanel')}>Till hantverkarpanelen</button>
       </div>
     )
   }
 
   return (
     <div className="project-page">
-      <h1>Bli hantverkarpartner</h1>
-      <p>Registrera ditt företag för att få tillgång till projektförfrågningar från privatpersoner.</p>
+      <h1>{isEditing ? 'Redigera din profil' : 'Bli hantverkarpartner'}</h1>
+      <p>
+        {isEditing
+          ? 'Uppdatera era uppgifter nedan.'
+          : 'Registrera ditt företag för att få tillgång till projektförfrågningar från privatpersoner.'}
+      </p>
 
       <form className="contractor-form" onSubmit={handleSubmit}>
         <label>
@@ -108,7 +119,7 @@ function BecomeContractorPage() {
         </div>
 
         <button type="submit" className="main-button" disabled={submitting || tradeTypes.length === 0}>
-          {submitting ? 'Registrerar...' : 'Registrera företag'}
+          {submitting ? 'Sparar...' : isEditing ? 'Spara ändringar' : 'Registrera företag'}
         </button>
       </form>
     </div>
