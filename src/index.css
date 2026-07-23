@@ -158,3 +158,9 @@ body { font-family: Arial, Helvetica, sans-serif; background: #f8fafc; color: #0
 .request-message { font-size: 14px; color: #475569; font-style: italic; margin: 8px 0; }
 .request-card-footer { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9; font-size: 13px; color: #64748b; }
 .request-time { color: #94a3b8; }
+
+/* Org number verification */
+.verify-row { display: flex; gap: 10px; }
+.verify-row input { flex: 1; }
+.verify-success { color: #16a34a; font-size: 14px; margin-top: 6px; }
+.verify-error { color: #dc2626; font-size: 14px; margin-top: 6px; }

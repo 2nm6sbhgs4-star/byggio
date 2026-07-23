@@ -18,6 +18,9 @@ function BecomeContractorPage() {
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
 
+  const [verifyStatus, setVerifyStatus] = useState<'idle' | 'checking' | 'verified' | 'failed'>('idle')
+  const [verifiedName, setVerifiedName] = useState<string | null>(null)
+
   useEffect(() => {
     if (!user) { setChecking(false); return }
     getContractorProfile(user.uid).then((profile) => {
@@ -28,6 +31,8 @@ function BecomeContractorPage() {
         setPhone(profile.phone)
         setPostnummer(profile.postnummer)
         setTradeTypes(profile.tradeTypes)
+        setVerifyStatus('verified')
+        setVerifiedName(profile.companyName)
       }
       setChecking(false)
     })
@@ -39,9 +44,34 @@ function BecomeContractorPage() {
     )
   }
 
+  const handleOrgNumberChange = (value: string) => {
+    setOrgNumber(value)
+    setVerifyStatus('idle')
+    setVerifiedName(null)
+  }
+
+  const handleVerify = async () => {
+    if (!orgNumber) return
+    setVerifyStatus('checking')
+    try {
+      const response = await fetch(`/api/verify-org?orgNumber=${encodeURIComponent(orgNumber)}`)
+      const data = await response.json()
+      if (data.verified) {
+        setVerifyStatus('verified')
+        setVerifiedName(data.companyName ?? null)
+      } else {
+        setVerifyStatus('failed')
+        setVerifiedName(null)
+      }
+    } catch (err) {
+      console.error(err)
+      setVerifyStatus('failed')
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    if (!user || verifyStatus !== 'verified') return
     setSubmitting(true)
     await registerContractor(user.uid, {
       companyName,
@@ -91,10 +121,34 @@ function BecomeContractorPage() {
           Företagsnamn
           <input type="text" required value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
         </label>
+
         <label>
           Organisationsnummer
-          <input type="text" required placeholder="XXXXXX-XXXX" value={orgNumber} onChange={(e) => setOrgNumber(e.target.value)} />
+          <div className="verify-row">
+            <input
+              type="text"
+              required
+              placeholder="XXXXXX-XXXX"
+              value={orgNumber}
+              onChange={(e) => handleOrgNumberChange(e.target.value)}
+            />
+            <button
+              type="button"
+              className="diy-decline"
+              onClick={handleVerify}
+              disabled={!orgNumber || verifyStatus === 'checking'}
+            >
+              {verifyStatus === 'checking' ? 'Kollar...' : 'Verifiera'}
+            </button>
+          </div>
+          {verifyStatus === 'verified' && (
+            <p className="verify-success">✓ Verifierat{verifiedName ? `: ${verifiedName}` : ''}</p>
+          )}
+          {verifyStatus === 'failed' && (
+            <p className="verify-error">✗ Kunde inte verifiera organisationsnumret. Kontrollera att det är korrekt.</p>
+          )}
         </label>
+
         <label>
           Telefonnummer
           <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} />
@@ -118,9 +172,16 @@ function BecomeContractorPage() {
           ))}
         </div>
 
-        <button type="submit" className="main-button" disabled={submitting || tradeTypes.length === 0}>
+        <button
+          type="submit"
+          className="main-button"
+          disabled={submitting || tradeTypes.length === 0 || verifyStatus !== 'verified'}
+        >
           {submitting ? 'Sparar...' : isEditing ? 'Spara ändringar' : 'Registrera företag'}
         </button>
+        {verifyStatus !== 'verified' && (
+          <p className="save-hint">Verifiera organisationsnumret innan du kan {isEditing ? 'spara' : 'registrera'}.</p>
+        )}
       </form>
     </div>
   )
