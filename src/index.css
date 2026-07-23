@@ -130,3 +130,31 @@ body { font-family: Arial, Helvetica, sans-serif; background: #f8fafc; color: #0
 .publish-buttons { display: flex; gap: 12px; justify-content: flex-end; }
 
 .request-card { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+/* Contractor dashboard */
+.dashboard { max-width: 900px; margin: 0 auto; padding: 60px 40px; text-align: left; }
+.dashboard-empty { max-width: 700px; text-align: center; }
+.dashboard-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+.dashboard-header h1 { font-size: 36px; margin-bottom: 6px; }
+.dashboard-subtitle { color: #64748b; font-size: 15px; }
+.dashboard-edit-link { color: #475569; text-decoration: none; font-size: 14px; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 30px; }
+.dashboard-edit-link:hover { border-color: #f97316; color: #f97316; }
+
+.dashboard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
+.stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; text-align: center; }
+.stat-number { display: block; font-size: 36px; font-weight: 800; color: #f97316; }
+.stat-label { font-size: 13px; color: #64748b; }
+
+.dashboard-empty-state { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 40px; text-align: center; color: #64748b; }
+
+.request-list { display: flex; flex-direction: column; gap: 16px; }
+.request-card { display: flex; gap: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; transition: border-color 0.2s, box-shadow 0.2s; }
+.request-card:hover { border-color: #f97316; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06); }
+.request-card-icon { font-size: 36px; flex-shrink: 0; }
+.request-card-body { flex: 1; }
+.request-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.request-card-top h3 { font-size: 18px; }
+.request-badge { background: #f97316; color: white; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; }
+.request-message { font-size: 14px; color: #475569; font-style: italic; margin: 8px 0; }
+.request-card-footer { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9; font-size: 13px; color: #64748b; }
+.request-time { color: #94a3b8; }
