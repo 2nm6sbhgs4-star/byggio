@@ -64,3 +64,23 @@ body { font-family: Arial, Helvetica, sans-serif; background: #f8fafc; color: #0
 
 .form-grid select { padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; background: white; }
 .form-grid select:focus { outline: none; border-color: #f97316; }
+
+/* Footer */
+.footer { display: flex; justify-content: space-between; align-items: center; padding: 24px 80px; font-size: 14px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
+.footer a { color: #94a3b8; text-decoration: none; }
+.footer a:hover { color: #f97316; }
+
+/* Privacy page */
+.policy-content { text-align: left; max-width: 600px; margin: 24px auto 0; }
+.policy-content h3 { margin-top: 24px; margin-bottom: 8px; font-size: 18px; }
+.policy-content p { color: #475569; line-height: 1.6; margin-bottom: 8px; }
+.policy-content a { color: #f97316; }
+
+/* Cookie consent */
+.cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; z-index: 100; }
+.cookie-banner p { margin: 0; font-size: 14px; max-width: 600px; }
+.cookie-banner a { color: #f97316; }
+.cookie-buttons { display: flex; gap: 12px; flex-shrink: 0; }
+.cookie-decline, .cookie-accept { padding: 10px 20px; border-radius: 30px; font-size: 14px; cursor: pointer; border: none; }
+.cookie-decline { background: transparent; border: 1px solid #475569; color: white; }
+.cookie-accept { background: #f97316; color: white; }

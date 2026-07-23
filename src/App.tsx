@@ -2,6 +2,9 @@ import { Routes, Route } from 'react-router-dom'
 import Navbar from './Navbar'
 import ProjectCards from './ProjectCards'
 import ProjectPage from './ProjectPage'
+import PrivacyPage from './PrivacyPage'
+import CookieConsent from './CookieConsent'
+import Footer from './Footer'
 
 function Home() {
   const scrollToProjects = () => {
@@ -28,8 +31,11 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/integritetspolicy" element={<PrivacyPage />} />
         <Route path="/:projectId" element={<ProjectPage />} />
       </Routes>
+      <Footer />
+      <CookieConsent />
     </div>
   )
 }
