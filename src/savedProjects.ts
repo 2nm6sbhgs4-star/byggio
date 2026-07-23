@@ -7,6 +7,7 @@ export type SavedProject = {
   projectSlug: string
   projectTitle: string
   variantLabel?: string
+  variantKey?: string
   inputValues: Record<string, string>
   createdAt: Timestamp
 }
@@ -16,13 +17,15 @@ export async function saveProject(
   projectSlug: string,
   projectTitle: string,
   inputValues: Record<string, string>,
-  variantLabel?: string
+  variantLabel?: string,
+  variantKey?: string
 ) {
   await addDoc(collection(db, 'savedProjects'), {
     userId,
     projectSlug,
     projectTitle,
     variantLabel: variantLabel ?? null,
+    variantKey: variantKey ?? null,
     inputValues,
     createdAt: Timestamp.now(),
   })

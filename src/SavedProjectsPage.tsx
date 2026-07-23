@@ -47,8 +47,14 @@ function SavedProjectsPage() {
               </p>
             </div>
             <div className="saved-actions">
-              <Link to={`/${p.projectSlug}`} className="cookie-decline">Öppna</Link>
-              <button className="cookie-decline" onClick={() => handleDelete(p.id)}>Ta bort</button>
+              <Link
+                to={`/${p.projectSlug}`}
+                state={{ inputValues: p.inputValues, variantKey: p.variantKey }}
+                className="diy-decline"
+              >
+                Öppna
+              </Link>
+              <button className="diy-decline" onClick={() => handleDelete(p.id)}>Ta bort</button>
             </div>
           </div>
         ))}

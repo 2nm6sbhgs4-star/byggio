@@ -2,8 +2,9 @@ import { useState } from 'react'
 import type { CalculatorConfig, CalculatorVariant, Field, ResultRow, Tool } from './calculators'
 import { useAuth } from './AuthContext'
 import { saveProject } from './savedProjects'
+import PublishRequestForm from './PublishRequestForm'
 
-function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, projectSlug, projectTitle, variantLabel }: {
+function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, projectSlug, projectTitle, variantLabel, variantKey, initialValues }: {
   fields: Field[]
   calculate: (v: Record<string, number>, raw: Record<string, string>) => ResultRow[]
   steps?: string[]
@@ -12,14 +13,17 @@ function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, pr
   projectSlug: string
   projectTitle: string
   variantLabel?: string
+  variantKey?: string
+  initialValues?: Record<string, string>
 }) {
   const { user } = useAuth()
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [showSteps, setShowSteps] = useState(false)
   const [showTools, setShowTools] = useState(false)
+  const [diyChoice, setDiyChoice] = useState<'unset' | 'diy' | 'hire'>('unset')
 
   const initial: Record<string, string> = {}
-  fields.forEach((f) => { initial[f.key] = f.default ?? '' })
+  fields.forEach((f) => { initial[f.key] = initialValues?.[f.key] ?? f.default ?? '' })
   const [values, setValues] = useState(initial)
 
   const numericValues: Record<string, number> = {}
@@ -36,7 +40,7 @@ function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, pr
   const handleSave = async () => {
     if (!user) return
     setSaveStatus('saving')
-    await saveProject(user.uid, projectSlug, projectTitle, values, variantLabel)
+    await saveProject(user.uid, projectSlug, projectTitle, values, variantLabel, variantKey)
     setSaveStatus('saved')
     setTimeout(() => setSaveStatus('idle'), 2000)
   }
@@ -111,6 +115,32 @@ function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, pr
         <p className="save-hint">Logga in för att spara detta projekt.</p>
       )}
 
+      {harResultat && diyChoice === 'unset' && (
+        <div className="diy-box">
+          <h3>Vill du göra jobbet själv?</h3>
+          <div className="diy-buttons">
+            <button className="main-button" onClick={() => setDiyChoice('diy')}>Ja, jag fixar det själv</button>
+            <button className="diy-decline" onClick={() => setDiyChoice('hire')}>Nej, jag vill ha offert från hantverkare</button>
+          </div>
+        </div>
+      )}
+
+      {diyChoice === 'diy' && (
+        <div className="diy-box">
+          <p>Bra! Använd guiden och verktygslistan nedan för att komma igång.</p>
+        </div>
+      )}
+
+      {diyChoice === 'hire' && (
+        <PublishRequestForm
+          projectSlug={projectSlug}
+          projectTitle={projectTitle}
+          variantLabel={variantLabel}
+          inputValues={values}
+          onClose={() => setDiyChoice('unset')}
+        />
+      )}
+
       {tools && (
         <div className="guide-box">
           <button className="guide-toggle" onClick={() => setShowTools(!showTools)}>
@@ -163,13 +193,15 @@ function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, pr
   )
 }
 
-function Calculator({ config, projectSlug, projectTitle }: {
+function Calculator({ config, projectSlug, projectTitle, initialValues, initialVariantKey }: {
   config: CalculatorConfig
   projectSlug: string
   projectTitle: string
+  initialValues?: Record<string, string>
+  initialVariantKey?: string
 }) {
   const [variantKey, setVariantKey] = useState<string | null>(
-    config.variants ? config.variants[0].key : null
+    initialVariantKey ?? (config.variants ? config.variants[0].key : null)
   )
 
   const activeVariant: CalculatorVariant | null = config.variants
@@ -202,6 +234,8 @@ function Calculator({ config, projectSlug, projectTitle }: {
           projectSlug={projectSlug}
           projectTitle={projectTitle}
           variantLabel={activeVariant.label}
+          variantKey={activeVariant.key}
+          initialValues={initialValues}
         />
       ) : (
         config.fields && config.calculate && (
@@ -213,6 +247,7 @@ function Calculator({ config, projectSlug, projectTitle }: {
             tools={config.tools}
             projectSlug={projectSlug}
             projectTitle={projectTitle}
+            initialValues={initialValues}
           />
         )
       )}

@@ -4,6 +4,7 @@ import ProjectCards from './ProjectCards'
 import ProjectPage from './ProjectPage'
 import PrivacyPage from './PrivacyPage'
 import SavedProjectsPage from './SavedProjectsPage'
+import BecomeContractorPage from './BecomeContractorPage'
 import CookieConsent from './CookieConsent'
 import Footer from './Footer'
 
@@ -34,6 +35,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/integritetspolicy" element={<PrivacyPage />} />
         <Route path="/mina-projekt" element={<SavedProjectsPage />} />
+        <Route path="/bli-hantverkare" element={<BecomeContractorPage />} />
         <Route path="/:projectId" element={<ProjectPage />} />
       </Routes>
       <Footer />
