@@ -1,18 +1,35 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
+const ADSENSE_CLIENT_ID = 'ca-pub-2770816718754673'
+
+function loadAdSenseScript() {
+  if (document.getElementById('adsense-script')) return // redan laddat
+
+  const script = document.createElement('script')
+  script.id = 'adsense-script'
+  script.async = true
+  script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`
+  script.crossOrigin = 'anonymous'
+  document.head.appendChild(script)
+}
+
 function CookieConsent() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     const consent = localStorage.getItem('byggio-cookie-consent')
-    if (!consent) setVisible(true)
+    if (!consent) {
+      setVisible(true)
+    } else if (consent === 'accepted') {
+      loadAdSenseScript()
+    }
   }, [])
 
   const handleChoice = (accepted: boolean) => {
     localStorage.setItem('byggio-cookie-consent', accepted ? 'accepted' : 'declined')
     setVisible(false)
-    // När AdSense är godkänt: ladda in annonsskriptet här dynamiskt om accepted === true
+    if (accepted) loadAdSenseScript()
   }
 
   if (!visible) return null

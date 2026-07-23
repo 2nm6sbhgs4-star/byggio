@@ -26,7 +26,7 @@ function ProjectPage() {
       <p>{project.text}</p>
 
       {calcConfig ? (
-        <Calculator config={calcConfig} />
+        <Calculator config={calcConfig} projectSlug={project.slug} projectTitle={project.title} />
       ) : (
         <div className="coming-soon">Beräkningsverktyg kommer snart för {project.title}.</div>
       )}

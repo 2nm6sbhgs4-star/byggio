@@ -1,12 +1,23 @@
 import { useState } from 'react'
-import type { CalculatorConfig, CalculatorVariant, Field, ResultRow } from './calculators'
+import type { CalculatorConfig, CalculatorVariant, Field, ResultRow, Tool } from './calculators'
+import { useAuth } from './AuthContext'
+import { saveProject } from './savedProjects'
 
-function CalculatorForm({ fields, calculate, steps, stepIllustrations }: {
+function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, projectSlug, projectTitle, variantLabel }: {
   fields: Field[]
   calculate: (v: Record<string, number>, raw: Record<string, string>) => ResultRow[]
   steps?: string[]
   stepIllustrations?: string[]
+  tools?: Tool[]
+  projectSlug: string
+  projectTitle: string
+  variantLabel?: string
 }) {
+  const { user } = useAuth()
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [showSteps, setShowSteps] = useState(false)
+  const [showTools, setShowTools] = useState(false)
+
   const initial: Record<string, string> = {}
   fields.forEach((f) => { initial[f.key] = f.default ?? '' })
   const [values, setValues] = useState(initial)
@@ -21,6 +32,14 @@ function CalculatorForm({ fields, calculate, steps, stepIllustrations }: {
   const results = harResultat ? calculate(numericValues, values) : []
   const totalPris = results.reduce((sum, r) => sum + (r.pricePerUnit ? r.quantity * r.pricePerUnit : 0), 0)
   const harPriser = results.some((r) => r.pricePerUnit)
+
+  const handleSave = async () => {
+    if (!user) return
+    setSaveStatus('saving')
+    await saveProject(user.uid, projectSlug, projectTitle, values, variantLabel)
+    setSaveStatus('saved')
+    setTimeout(() => setSaveStatus('idle'), 2000)
+  }
 
   return (
     <>
@@ -83,32 +102,72 @@ function CalculatorForm({ fields, calculate, steps, stepIllustrations }: {
         </div>
       )}
 
+      {harResultat && user && (
+        <button className="save-button" onClick={handleSave} disabled={saveStatus !== 'idle'}>
+          {saveStatus === 'saving' ? 'Sparar...' : saveStatus === 'saved' ? 'Sparat! ✓' : 'Spara projekt'}
+        </button>
+      )}
+      {harResultat && !user && (
+        <p className="save-hint">Logga in för att spara detta projekt.</p>
+      )}
+
+      {tools && (
+        <div className="guide-box">
+          <button className="guide-toggle" onClick={() => setShowTools(!showTools)}>
+            {showTools ? 'Dölj verktyg & maskiner ▲' : 'Visa verktyg & maskiner ▼'}
+          </button>
+          {showTools && (
+            <div className="tools-list">
+              {tools.map((t) => (
+                <div className="result-row" key={t.name}>
+                  <span>{t.name}</span>
+                  {!t.own && <strong>Hyra: ~{t.pricePerDay} kr/dag</strong>}
+                </div>
+              ))}
+              <p className="disclaimer">
+                Ungefärliga hyrespriser från svenska uthyrningsfirmor, kan variera mellan orter och leverantörer.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {steps && (
         <div className="guide-box">
-          <h3>Så här går du tillväga</h3>
-          <ol className="guide-list">
-            {steps.map((step, i) => (
-              <li key={i}>
-                {stepIllustrations?.[i] && (
-                  <div
-                    className="step-illustration"
-                    dangerouslySetInnerHTML={{ __html: stepIllustrations[i] }}
-                  />
-                )}
-                {step}
-              </li>
-            ))}
-          </ol>
-          <p className="disclaimer">
-            Generell vägledning – följ alltid tillverkarens anvisningar och lokala byggregler.
-          </p>
+          <button className="guide-toggle" onClick={() => setShowSteps(!showSteps)}>
+            {showSteps ? 'Dölj byggguide ▲' : 'Visa byggguide – så här går du tillväga ▼'}
+          </button>
+          {showSteps && (
+            <>
+              <ol className="guide-list">
+                {steps.map((step, i) => (
+                  <li key={i}>
+                    {stepIllustrations?.[i] && (
+                      <div
+                        className="step-illustration"
+                        dangerouslySetInnerHTML={{ __html: stepIllustrations[i] }}
+                      />
+                    )}
+                    {step}
+                  </li>
+                ))}
+              </ol>
+              <p className="disclaimer">
+                Generell vägledning – följ alltid tillverkarens anvisningar och lokala byggregler.
+              </p>
+            </>
+          )}
         </div>
       )}
     </>
   )
 }
 
-function Calculator({ config }: { config: CalculatorConfig }) {
+function Calculator({ config, projectSlug, projectTitle }: {
+  config: CalculatorConfig
+  projectSlug: string
+  projectTitle: string
+}) {
   const [variantKey, setVariantKey] = useState<string | null>(
     config.variants ? config.variants[0].key : null
   )
@@ -139,6 +198,10 @@ function Calculator({ config }: { config: CalculatorConfig }) {
           calculate={activeVariant.calculate}
           steps={activeVariant.steps}
           stepIllustrations={activeVariant.stepIllustrations}
+          tools={activeVariant.tools}
+          projectSlug={projectSlug}
+          projectTitle={projectTitle}
+          variantLabel={activeVariant.label}
         />
       ) : (
         config.fields && config.calculate && (
@@ -147,6 +210,9 @@ function Calculator({ config }: { config: CalculatorConfig }) {
             calculate={config.calculate}
             steps={config.steps}
             stepIllustrations={config.stepIllustrations}
+            tools={config.tools}
+            projectSlug={projectSlug}
+            projectTitle={projectTitle}
           />
         )
       )}

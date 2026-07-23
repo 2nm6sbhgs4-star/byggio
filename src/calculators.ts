@@ -21,6 +21,12 @@ export type ResultRow = {
   pricePerUnit?: number
 }
 
+export type Tool = {
+  name: string
+  pricePerDay?: number
+  own?: boolean
+}
+
 export type CalculatorVariant = {
   key: string
   label: string
@@ -28,6 +34,7 @@ export type CalculatorVariant = {
   calculate: (v: Record<string, number>, raw: Record<string, string>) => ResultRow[]
   steps?: string[]
   stepIllustrations?: string[]
+  tools?: Tool[]
 }
 
 export type CalculatorConfig = {
@@ -35,6 +42,7 @@ export type CalculatorConfig = {
   calculate?: (v: Record<string, number>, raw: Record<string, string>) => ResultRow[]
   steps?: string[]
   stepIllustrations?: string[]
+  tools?: Tool[]
   variants?: CalculatorVariant[]
 }
 
@@ -54,6 +62,27 @@ const regelDimensioner: Record<string, { prisPerM: number; namn: string }> = {
 const plintTyper: Record<string, { pris: number; namn: string }> = {
   betongplint: { pris: 89, namn: 'Betongplint' },
   markskruv: { pris: 249, namn: 'Markskruv' },
+}
+
+const fastmetoder: Record<string, { namn: string; getRows: (antalStolpar: number) => ResultRow[] }> = {
+  betong: {
+    namn: 'Betong',
+    getRows: (antalStolpar) => [
+      { label: 'Betong (25 kg-säck, ca 2/stolpe)', quantity: antalStolpar * 2, unit: 'st', decimals: 0, pricePerUnit: 89 },
+    ]
+  },
+  grus: {
+    namn: 'Packad singel/grus',
+    getRows: (antalStolpar) => [
+      { label: 'Singel/grus (ca 0,05 m³/stolpe)', quantity: antalStolpar * 0.05, unit: 'm³', decimals: 2, pricePerUnit: 350 },
+    ]
+  },
+  markspets: {
+    namn: 'Markspets (slå ner)',
+    getRows: (antalStolpar) => [
+      { label: 'Markspets/markankare', quantity: antalStolpar, unit: 'st', decimals: 0, pricePerUnit: 179 },
+    ]
+  },
 }
 
 export const calculators: Record<string, CalculatorConfig> = {
@@ -126,6 +155,13 @@ export const calculators: Record<string, CalculatorConfig> = {
       'Såga kanterna raka och montera eventuell kantlist eller trappsteg.',
     ],
     stepIllustrations: altanIllustrations,
+    tools: [
+      { name: 'Jordborr (för plinthål)', pricePerDay: 400 },
+      { name: 'Vattenpass', own: true },
+      { name: 'Cirkelsåg', own: true },
+      { name: 'Skruvdragare/borrmaskin', own: true },
+      { name: 'Spade', own: true },
+    ],
   },
 
   'armering-betong': {
@@ -157,6 +193,12 @@ export const calculators: Record<string, CalculatorConfig> = {
           'Låt betongen härda i minst en vecka innan full belastning.',
         ],
         stepIllustrations: plattaIllustrations,
+        tools: [
+          { name: 'Markvibrator (packa bärlager)', pricePerDay: 370 },
+          { name: 'Betongblandare', pricePerDay: 200 },
+          { name: 'Rätskiva', own: true },
+          { name: 'Spade/skottkärra', own: true },
+        ],
       },
       {
         key: 'husgrund',
@@ -187,6 +229,11 @@ export const calculators: Record<string, CalculatorConfig> = {
           'Låt härda och skydda mot uttorkning och frost de första dygnen.',
         ],
         stepIllustrations: husgrundIllustrations,
+        tools: [
+          { name: 'Markvibrator (packa bärlager)', pricePerDay: 370 },
+          { name: 'Betongblandare', pricePerDay: 200 },
+          { name: 'Rätskiva', own: true },
+        ],
       },
       {
         key: 'mur',
@@ -214,6 +261,11 @@ export const calculators: Record<string, CalculatorConfig> = {
           'Se till att muren har dränering bakom sig om den ska hålla emot jordmassor.',
         ],
         stepIllustrations: murIllustrations,
+        tools: [
+          { name: 'Betongblandare', pricePerDay: 200 },
+          { name: 'Betongvibrator', pricePerDay: 300 },
+          { name: 'Spade', own: true },
+        ],
       },
     ]
   },
@@ -223,16 +275,29 @@ export const calculators: Record<string, CalculatorConfig> = {
       { key: 'langd', label: 'Total längd', unit: 'm' },
       { key: 'hojd', label: 'Höjd', unit: 'cm', default: '180' },
       { key: 'stolpavstand', label: 'Stolpavstånd', unit: 'cm', default: '180' },
+      {
+        key: 'fastmetod', label: 'Fästmetod för stolpar', unit: '', type: 'select', default: 'betong',
+        options: [
+          { value: 'betong', label: 'Betong' },
+          { value: 'grus', label: 'Packad singel/grus' },
+          { value: 'markspets', label: 'Markspets (slå ner)' },
+        ]
+      },
     ],
-    calculate: (v) => {
+    calculate: (v, raw) => {
       const antalStolpar = Math.ceil((v.langd * 100) / v.stolpavstand) + 1
       const brädorPerMeter = 100 / 12
       const antalBrador = Math.ceil(v.langd * brädorPerMeter)
       const skruvAtgang = antalBrador * 4
+
+      const fastmetod = fastmetoder[raw.fastmetod] ?? fastmetoder['betong']
+      const fastmetodRows = fastmetod.getRows(antalStolpar)
+
       return [
         { label: 'Stolpar', quantity: antalStolpar, unit: 'st', decimals: 0, pricePerUnit: 149 },
         { label: 'Brädor', quantity: antalBrador, unit: 'st', decimals: 0, pricePerUnit: 59 },
         { label: 'Skruv', quantity: skruvAtgang, unit: 'st', decimals: 0, pricePerUnit: 1.5 },
+        ...fastmetodRows,
       ]
     },
     steps: [
@@ -242,8 +307,13 @@ export const calculators: Record<string, CalculatorConfig> = {
       'Låt stolparna stå stadigt (och betongen härda om du gjutit) innan du fortsätter.',
       'Montera vågräta reglar mellan stolparna.',
       'Skruva fast brädorna på reglarna med jämna mellanrum.',
-      ],
+    ],
     stepIllustrations: staketIllustrations,
-  
+    tools: [
+      { name: 'Jordborr (för stolphål)', pricePerDay: 400 },
+      { name: 'Vattenpass', own: true },
+      { name: 'Cirkelsåg', own: true },
+      { name: 'Skruvdragare', own: true },
+    ],
   },
 }

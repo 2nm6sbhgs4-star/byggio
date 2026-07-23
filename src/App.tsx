@@ -3,6 +3,7 @@ import Navbar from './Navbar'
 import ProjectCards from './ProjectCards'
 import ProjectPage from './ProjectPage'
 import PrivacyPage from './PrivacyPage'
+import SavedProjectsPage from './SavedProjectsPage'
 import CookieConsent from './CookieConsent'
 import Footer from './Footer'
 
@@ -32,6 +33,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/integritetspolicy" element={<PrivacyPage />} />
+        <Route path="/mina-projekt" element={<SavedProjectsPage />} />
         <Route path="/:projectId" element={<ProjectPage />} />
       </Routes>
       <Footer />
