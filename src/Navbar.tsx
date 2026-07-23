@@ -14,6 +14,7 @@ function Navbar() {
             <span className="user-name">{user.displayName}</span>
             <Link to="/mina-projekt" className="nav-link">Mina projekt</Link>
             <Link to="/bli-hantverkare" className="nav-link">Bli hantverkarpartner</Link>
+            <Link to="/hantverkarpanel" className="nav-link">Hantverkarpanel</Link>
             <button className="nav-button" onClick={logout}>Logga ut</button>
           </div>
         ) : (

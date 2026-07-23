@@ -1,7 +1,8 @@
-import { collection, addDoc, Timestamp } from 'firebase/firestore'
+import { collection, addDoc, query, where, orderBy, getDocs, Timestamp } from 'firebase/firestore'
 import { db } from './firebase'
 
 export type ProjectRequest = {
+  id: string
   userId: string
   projectSlug: string
   projectTitle: string
@@ -36,4 +37,20 @@ export async function publishProjectRequest(data: {
     status: 'open',
     createdAt: Timestamp.now(),
   })
+}
+
+export async function getMatchingRequests(
+  postnummerPrefix: string,
+  tradeTypes: string[]
+): Promise<ProjectRequest[]> {
+  if (tradeTypes.length === 0) return []
+  const q = query(
+    collection(db, 'projectRequests'),
+    where('postnummerPrefix', '==', postnummerPrefix),
+    where('projectSlug', 'in', tradeTypes),
+    where('status', '==', 'open'),
+    orderBy('createdAt', 'desc')
+  )
+  const snapshot = await getDocs(q)
+  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as ProjectRequest))
 }
