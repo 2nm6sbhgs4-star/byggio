@@ -21,7 +21,11 @@ function ProjectPage() {
   return (
     <div className="project-page">
       <Link to="/" className="back-link">← Tillbaka</Link>
-      <div className="icon">{project.icon}</div>
+      {project.icon.startsWith('<svg') ? (
+  <div className="icon" dangerouslySetInnerHTML={{ __html: project.icon }} />
+) : (
+  <div className="icon">{project.icon}</div>
+)}
       <h1>{project.title}</h1>
       <p>{project.text}</p>
 

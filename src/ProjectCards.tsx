@@ -8,7 +8,11 @@ function ProjectCards() {
       <div className="project-grid">
         {projects.map((project) => (
           <Link to={`/${project.slug}`} className="project-card" key={project.slug}>
-            <div className="icon">{project.icon}</div>
+            {project.icon.startsWith('<svg') ? (
+              <div className="icon" dangerouslySetInnerHTML={{ __html: project.icon }} />
+            ) : (
+              <div className="icon">{project.icon}</div>
+            )}
             <h3>{project.title}</h3>
             <p>{project.text}</p>
           </Link>
