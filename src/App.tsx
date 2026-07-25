@@ -8,6 +8,7 @@ import BecomeContractorPage from './BecomeContractorPage'
 import ContractorDashboardPage from './ContractorDashboardPage'
 import CookieConsent from './CookieConsent'
 import Footer from './Footer'
+import FeedbackPage from './FeedbackPage'
 
 function Home() {
   const scrollToProjects = () => {
@@ -39,6 +40,7 @@ function App() {
         <Route path="/bli-hantverkare" element={<BecomeContractorPage />} />
         <Route path="/hantverkarpanel" element={<ContractorDashboardPage />} />
         <Route path="/:projectId" element={<ProjectPage />} />
+        <Route path="/feedback" element={<FeedbackPage />} />
       </Routes>
       <Footer />
       <CookieConsent />

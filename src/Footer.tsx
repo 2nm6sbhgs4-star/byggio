@@ -4,7 +4,10 @@ function Footer() {
   return (
     <footer className="footer">
       <span>© {new Date().getFullYear()} Byggio</span>
-      <Link to="/integritetspolicy">Integritetspolicy</Link>
+      <div className="footer-links">
+        <Link to="/feedback">Feedback</Link>
+        <Link to="/integritetspolicy">Integritetspolicy</Link>
+      </div>
     </footer>
   )
 }
