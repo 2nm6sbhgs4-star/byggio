@@ -57,11 +57,24 @@ const regelDimensioner: Record<string, { prisPerM: number; namn: string }> = {
   '45x95': { prisPerM: 35, namn: '45×95 mm' },
   '45x145': { prisPerM: 45, namn: '45×145 mm' },
   '45x170': { prisPerM: 55, namn: '45×170 mm' },
+  '45x220': { prisPerM: 70, namn: '45×220 mm' },
 }
 
 const plintTyper: Record<string, { pris: number; namn: string }> = {
   betongplint: { pris: 89, namn: 'Betongplint' },
   markskruv: { pris: 249, namn: 'Markskruv' },
+}
+
+const stolpDimensioner: Record<string, { pris: number; namn: string }> = {
+  '70x70': { pris: 99, namn: '70×70 mm' },
+  '95x95': { pris: 149, namn: '95×95 mm' },
+  '120x120': { pris: 229, namn: '120×120 mm' },
+}
+
+const staketRegelDimensioner: Record<string, { prisPerM: number; namn: string }> = {
+  '34x45': { prisPerM: 18, namn: '34×45 mm' },
+  '45x70': { prisPerM: 28, namn: '45×70 mm' },
+  '45x95': { prisPerM: 35, namn: '45×95 mm' },
 }
 
 const fastmetoder: Record<string, { namn: string; getRows: (antalStolpar: number) => ResultRow[] }> = {
@@ -100,7 +113,15 @@ export const calculators: Record<string, CalculatorConfig> = {
         ]
       },
       {
-        key: 'regeldimension', label: 'Regeldimension', unit: '', type: 'select', default: '45x95',
+        key: 'barlinadimension', label: 'Bärlinedimension (bärande, mot plintarna)', unit: '', type: 'select', default: '45x170',
+        options: [
+          { value: '45x145', label: '45×145 mm' },
+          { value: '45x170', label: '45×170 mm' },
+          { value: '45x220', label: '45×220 mm' },
+        ]
+      },
+      {
+        key: 'mellanregeldimension', label: 'Mellanregeldimension (mellan bärlinorna)', unit: '', type: 'select', default: '45x95',
         options: [
           { value: '45x95', label: '45×95 mm' },
           { value: '45x145', label: '45×145 mm' },
@@ -120,18 +141,21 @@ export const calculators: Record<string, CalculatorConfig> = {
       const plintavstand = 150
 
       const trallInfo = trallDimensioner[raw.tralldimension] ?? trallDimensioner['28x120']
-      const regelInfo = regelDimensioner[raw.regeldimension] ?? regelDimensioner['45x95']
+      const barlinaInfo = regelDimensioner[raw.barlinadimension] ?? regelDimensioner['45x170']
+      const mellanregelInfo = regelDimensioner[raw.mellanregeldimension] ?? regelDimensioner['45x95']
       const plintInfo = plintTyper[raw.plinttyp] ?? plintTyper['betongplint']
 
       const area = v.langd * v.bredd
-      const antalReglar = Math.ceil((v.bredd * 100) / regelavstand) + 1
-      const reglarLopmeter = antalReglar * v.langd
+      const antalBarlinor = 2
+      const barlinorLopmeter = antalBarlinor * v.langd
+      const antalMellanreglar = Math.ceil((v.bredd * 100) / regelavstand) + 1
+      const mellanreglarLopmeter = antalMellanreglar * v.langd
       const trallAtgang = area * 1.1
       const trallskruvAtgang = Math.ceil(area * 35)
 
       const plintarPerBarlina = Math.ceil((v.langd * 100) / plintavstand) + 1
-      const antalPlintar = plintarPerBarlina * 2
-      const antalBalkskor = antalReglar * 2
+      const antalPlintar = plintarPerBarlina * antalBarlinor
+      const antalBalkskor = antalMellanreglar * 2
 
       const ankarskruvPlint = antalPlintar * 2
       const ankarskruvBalksko = antalBalkskor * 4
@@ -140,18 +164,19 @@ export const calculators: Record<string, CalculatorConfig> = {
       return [
         { label: plintInfo.namn, quantity: antalPlintar, unit: 'st', decimals: 0, pricePerUnit: plintInfo.pris },
         { label: `Trall (${trallInfo.namn})`, quantity: trallAtgang, unit: 'm²', decimals: 1, pricePerUnit: trallInfo.prisPerM2 },
-        { label: `Reglar (${regelInfo.namn})`, quantity: reglarLopmeter, unit: 'm', decimals: 1, pricePerUnit: regelInfo.prisPerM },
+        { label: `Bärlinor, bärande (${barlinaInfo.namn})`, quantity: barlinorLopmeter, unit: 'm', decimals: 1, pricePerUnit: barlinaInfo.prisPerM },
+        { label: `Mellanreglar (${mellanregelInfo.namn})`, quantity: mellanreglarLopmeter, unit: 'm', decimals: 1, pricePerUnit: mellanregelInfo.prisPerM },
         { label: 'Trallskruv', quantity: trallskruvAtgang, unit: 'st', decimals: 0, pricePerUnit: 1.5 },
-        { label: 'Balkskor (45 mm, regel-bärlina)', quantity: antalBalkskor, unit: 'st', decimals: 0, pricePerUnit: 18 },
+        { label: 'Balkskor (45 mm, mellanregel–bärlina)', quantity: antalBalkskor, unit: 'st', decimals: 0, pricePerUnit: 18 },
         { label: 'Ankarskruv (40 mm)', quantity: totalAnkarskruv, unit: 'st', decimals: 0, pricePerUnit: 2.5 },
       ]
     },
     steps: [
       'Markera altanens läge och kontrollera med kommunen om bygglov krävs (t.ex. vid högre höjd eller nära tomtgräns).',
-      'Gräv och lägg plintar eller markskruvar i hörnen och med jämna mellanrum enligt regelavstånd.',
-      'Montera bärande reglar ovanpå plintarna, se till att de är i våg.',
-      'Lägg mellanreglar enligt valt regelavstånd för stabilt underlag.',
-      'Skruva fast trallen vinkelrätt mot reglarna, lämna någon millimeters mellanrum mellan brädorna för dränering.',
+      'Gräv och lägg plintar eller markskruvar längs långsidorna, med jämna mellanrum enligt plintavstånd.',
+      'Montera bärlinorna ovanpå plintarna – detta är de bärande reglarna som tar altanens hela vikt, så använd alltid en grövre dimension här (minst 45×170 mm, grövre vid längre spann) än mellanreglarna. Se till att de ligger i våg och är fästa med ankarskruv i plintarna.',
+      'Lägg mellanreglarna tvärs över bärlinorna med c/c 60 cm, fästa med balkskor. Mellanreglarna kan vara klenare (t.ex. 45×95 mm) eftersom de bara bär trallen och fördelar lasten vidare till bärlinorna.',
+      'Skruva fast trallen vinkelrätt mot mellanreglarna, lämna någon millimeters mellanrum mellan brädorna för dränering.',
       'Såga kanterna raka och montera eventuell kantlist eller trappsteg.',
     ],
     stepIllustrations: altanIllustrations,
@@ -276,6 +301,22 @@ export const calculators: Record<string, CalculatorConfig> = {
       { key: 'hojd', label: 'Höjd', unit: 'cm', default: '180' },
       { key: 'stolpavstand', label: 'Stolpavstånd', unit: 'cm', default: '180' },
       {
+        key: 'stolpdimension', label: 'Stolpdimension (bärande, gjuts/slås i marken)', unit: '', type: 'select', default: '95x95',
+        options: [
+          { value: '70x70', label: '70×70 mm – låga staket, under 100 cm' },
+          { value: '95x95', label: '95×95 mm – standard, upp till ca 150 cm' },
+          { value: '120x120', label: '120×120 mm – höga/vindutsatta insynsskydd' },
+        ]
+      },
+      {
+        key: 'regeldimension', label: 'Regeldimension (vågräta reglar mellan stolparna)', unit: '', type: 'select', default: '45x70',
+        options: [
+          { value: '34x45', label: '34×45 mm – lätta, låga staket' },
+          { value: '45x70', label: '45×70 mm – standard' },
+          { value: '45x95', label: '45×95 mm – höga eller täta insynsskyddande staket' },
+        ]
+      },
+      {
         key: 'fastmetod', label: 'Fästmetod för stolpar', unit: '', type: 'select', default: 'betong',
         options: [
           { value: 'betong', label: 'Betong' },
@@ -288,25 +329,34 @@ export const calculators: Record<string, CalculatorConfig> = {
       const antalStolpar = Math.ceil((v.langd * 100) / v.stolpavstand) + 1
       const brädorPerMeter = 100 / 12
       const antalBrador = Math.ceil(v.langd * brädorPerMeter)
-      const skruvAtgang = antalBrador * 4
+      const brädskruvAtgang = antalBrador * 4
+
+      const stolpInfo = stolpDimensioner[raw.stolpdimension] ?? stolpDimensioner['95x95']
+      const regelInfo = staketRegelDimensioner[raw.regeldimension] ?? staketRegelDimensioner['45x70']
+      // Staket över ca 120 cm bör ha en tredje regelrad så brädorna inte buktar av vind- och egenlast.
+      const antalRader = v.hojd > 120 ? 3 : 2
+      const regelLopmeter = antalRader * v.langd
+      const regelskruvAtgang = antalStolpar * antalRader * 2
 
       const fastmetod = fastmetoder[raw.fastmetod] ?? fastmetoder['betong']
       const fastmetodRows = fastmetod.getRows(antalStolpar)
 
       return [
-        { label: 'Stolpar', quantity: antalStolpar, unit: 'st', decimals: 0, pricePerUnit: 149 },
+        { label: `Stolpar, bärande (${stolpInfo.namn})`, quantity: antalStolpar, unit: 'st', decimals: 0, pricePerUnit: stolpInfo.pris },
+        { label: `Reglar, ${antalRader} rader (${regelInfo.namn})`, quantity: regelLopmeter, unit: 'm', decimals: 1, pricePerUnit: regelInfo.prisPerM },
         { label: 'Brädor', quantity: antalBrador, unit: 'st', decimals: 0, pricePerUnit: 59 },
-        { label: 'Skruv', quantity: skruvAtgang, unit: 'st', decimals: 0, pricePerUnit: 1.5 },
+        { label: 'Skruv (brädor mot reglar)', quantity: brädskruvAtgang, unit: 'st', decimals: 0, pricePerUnit: 1.5 },
+        { label: 'Skruv (reglar mot stolpar)', quantity: regelskruvAtgang, unit: 'st', decimals: 0, pricePerUnit: 2 },
         ...fastmetodRows,
       ]
     },
     steps: [
       'Markera staketets sträckning med snöre och mät ut stolparnas placering enligt valt avstånd.',
-      'Gräv eller borra hål för stolparna, minst 70–80 cm djupt beroende på tjäle och jordart.',
+      'Gräv eller borra hål för stolparna, minst 70–80 cm djupt beroende på tjäle och jordart. Stolparna är staketets bärande, vindupptagande del – ju högre och mer vindutsatt staketet är, desto grövre dimension behövs (95×95 mm som standard, 120×120 mm för höga insynsskydd).',
       'Sätt stolparna i våg och gjut eller packa fast dem ordentligt.',
       'Låt stolparna stå stadigt (och betongen härda om du gjutit) innan du fortsätter.',
-      'Montera vågräta reglar mellan stolparna.',
-      'Skruva fast brädorna på reglarna med jämna mellanrum.',
+      'Montera de vågräta reglarna mellan stolparna: 2 rader (upptill och nedtill) räcker för staket upp till ca 120 cm, men lägg till en tredje rad i mitten för högre staket så brädorna inte buktar. Reglarna bär hela brädpanelens vikt och vindlast – välj grövre regeldimension (t.ex. 45×95 mm) ju högre och tätare staketet är.',
+      'Skruva fast brädorna på reglarna med jämna mellanrum, och kontrollera fortlöpande att allt är i våg.',
     ],
     stepIllustrations: staketIllustrations,
     tools: [
