@@ -18,8 +18,6 @@ function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, pr
 }) {
   const { user } = useAuth()
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
-  const [showSteps, setShowSteps] = useState(false)
-  const [showTools, setShowTools] = useState(false)
   const [diyChoice, setDiyChoice] = useState<'unset' | 'diy' | 'hire'>('unset')
 
   const initial: Record<string, string> = {}
@@ -46,107 +44,129 @@ function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, pr
   }
 
   return (
-    <>
-      <div className="form-grid">
-        {fields.map((f) => (
-          <label key={f.key}>
-            {f.label} {f.unit && `(${f.unit})`}
-            {f.type === 'select' ? (
-              <select
-                value={values[f.key]}
-                onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-              >
-                {f.options?.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type="number"
-                value={values[f.key]}
-                onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-                placeholder="t.ex. 10"
-              />
-            )}
-          </label>
-        ))}
+    <div className="calculator-columns">
+      <div className="calculator-guide">
+        {steps && (
+          <div className="guide-box">
+            <h3>Byggguide – så här går du tillväga</h3>
+            <ol className="guide-list">
+              {steps.map((step, i) => (
+                <li key={i}>
+                  {stepIllustrations?.[i] && (
+                    <div
+                      className="step-illustration"
+                      dangerouslySetInnerHTML={{ __html: stepIllustrations[i] }}
+                    />
+                  )}
+                  {step}
+                </li>
+              ))}
+            </ol>
+            <p className="disclaimer">
+              Generell vägledning – följ alltid tillverkarens anvisningar och lokala byggregler.
+            </p>
+          </div>
+        )}
       </div>
 
-      {harResultat && (
-        <div className="result-box">
-          <h3>Materialåtgång</h3>
-          {results.map((r) => (
-            <div className="result-row" key={r.label}>
-              <span>{r.label}</span>
-              <strong>{r.quantity.toFixed(r.decimals ?? 1)} {r.unit}</strong>
-            </div>
+      <div className="calculator-main">
+        <div className="form-grid">
+          {fields.map((f) => (
+            <label key={f.key}>
+              {f.label} {f.unit && `(${f.unit})`}
+              {f.type === 'select' ? (
+                <select
+                  value={values[f.key]}
+                  onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                >
+                  {f.options?.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="number"
+                  value={values[f.key]}
+                  onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                  placeholder="t.ex. 10"
+                />
+              )}
+            </label>
           ))}
-          <p className="disclaimer">
-            Ungefärlig beräkning – kontrollera alltid mot konstruktionsritning eller kontakta en byggkonsult för exakta mängder.
-          </p>
         </div>
-      )}
 
-      {harResultat && harPriser && (
-        <div className="shopping-box">
-          <h3>Inköpslista</h3>
-          {results.filter((r) => r.pricePerUnit).map((r) => (
-            <div className="result-row" key={r.label}>
-              <span>{r.label} <span className="qty">({r.quantity.toFixed(r.decimals ?? 1)} {r.unit} à {r.pricePerUnit} kr)</span></span>
-              <strong>{Math.round(r.quantity * (r.pricePerUnit ?? 0)).toLocaleString('sv-SE')} kr</strong>
+        {harResultat && (
+          <div className="result-box">
+            <h3>Materialåtgång</h3>
+            {results.map((r) => (
+              <div className="result-row" key={r.label}>
+                <span>{r.label}</span>
+                <strong>{r.quantity.toFixed(r.decimals ?? 1)} {r.unit}</strong>
+              </div>
+            ))}
+            <p className="disclaimer">
+              Ungefärlig beräkning – kontrollera alltid mot konstruktionsritning eller kontakta en byggkonsult för exakta mängder.
+            </p>
+          </div>
+        )}
+
+        {harResultat && diyChoice === 'unset' && (
+          <div className="diy-box">
+            <h3>Vill du göra jobbet själv?</h3>
+            <div className="diy-buttons">
+              <button className="main-button" onClick={() => setDiyChoice('diy')}>Ja, jag fixar det själv</button>
+              <button className="diy-decline" onClick={() => setDiyChoice('hire')}>Nej, jag vill ha offert från hantverkare</button>
             </div>
-          ))}
-          <div className="result-row total-row">
-            <span>Totalt (material)</span>
-            <strong>{Math.round(totalPris).toLocaleString('sv-SE')} kr</strong>
           </div>
-          <p className="disclaimer">
-            Priserna är ungefärliga schablonpriser och kan skilja sig från faktiska butikspriser. Arbetskostnad ingår ej.
-          </p>
-        </div>
-      )}
+        )}
 
-      {harResultat && user && (
-        <button className="save-button" onClick={handleSave} disabled={saveStatus !== 'idle'}>
-          {saveStatus === 'saving' ? 'Sparar...' : saveStatus === 'saved' ? 'Sparat! ✓' : 'Spara projekt'}
-        </button>
-      )}
-      {harResultat && !user && (
-        <p className="save-hint">Logga in för att spara detta projekt.</p>
-      )}
-
-      {harResultat && diyChoice === 'unset' && (
-        <div className="diy-box">
-          <h3>Vill du göra jobbet själv?</h3>
-          <div className="diy-buttons">
-            <button className="main-button" onClick={() => setDiyChoice('diy')}>Ja, jag fixar det själv</button>
-            <button className="diy-decline" onClick={() => setDiyChoice('hire')}>Nej, jag vill ha offert från hantverkare</button>
+        {diyChoice === 'diy' && (
+          <div className="diy-box">
+            <p>Bra! Använd guiden och verktygslistan för att komma igång.</p>
           </div>
-        </div>
-      )}
+        )}
 
-      {diyChoice === 'diy' && (
-        <div className="diy-box">
-          <p>Bra! Använd guiden och verktygslistan nedan för att komma igång.</p>
-        </div>
-      )}
+        {diyChoice === 'hire' && (
+          <PublishRequestForm
+            projectSlug={projectSlug}
+            projectTitle={projectTitle}
+            variantLabel={variantLabel}
+            inputValues={values}
+            onClose={() => setDiyChoice('unset')}
+          />
+        )}
 
-      {diyChoice === 'hire' && (
-        <PublishRequestForm
-          projectSlug={projectSlug}
-          projectTitle={projectTitle}
-          variantLabel={variantLabel}
-          inputValues={values}
-          onClose={() => setDiyChoice('unset')}
-        />
-      )}
+        {harResultat && harPriser && (
+          <div className="shopping-box">
+            <h3>Inköpslista</h3>
+            {results.filter((r) => r.pricePerUnit).map((r) => (
+              <div className="result-row" key={r.label}>
+                <span>{r.label} <span className="qty">({r.quantity.toFixed(r.decimals ?? 1)} {r.unit} à {r.pricePerUnit} kr)</span></span>
+                <strong>{Math.round(r.quantity * (r.pricePerUnit ?? 0)).toLocaleString('sv-SE')} kr</strong>
+              </div>
+            ))}
+            <div className="result-row total-row">
+              <span>Totalt (material)</span>
+              <strong>{Math.round(totalPris).toLocaleString('sv-SE')} kr</strong>
+            </div>
+            <p className="disclaimer">
+              Priserna är ungefärliga schablonpriser och kan skilja sig från faktiska butikspriser. Arbetskostnad ingår ej.
+            </p>
+          </div>
+        )}
 
-      {tools && (
-        <div className="guide-box">
-          <button className="guide-toggle" onClick={() => setShowTools(!showTools)}>
-            {showTools ? 'Dölj verktyg & maskiner ▲' : 'Visa verktyg & maskiner ▼'}
+        {harResultat && user && (
+          <button className="save-button" onClick={handleSave} disabled={saveStatus !== 'idle'}>
+            {saveStatus === 'saving' ? 'Sparar...' : saveStatus === 'saved' ? 'Sparat! ✓' : 'Spara projekt'}
           </button>
-          {showTools && (
+        )}
+        {harResultat && !user && (
+          <p className="save-hint">Logga in för att spara detta projekt.</p>
+        )}
+
+        {tools && (
+          <div className="guide-box">
+            <h3>Verktyg & maskiner</h3>
             <div className="tools-list">
               {tools.map((t) => (
                 <div className="result-row" key={t.name}>
@@ -158,38 +178,10 @@ function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, pr
                 Ungefärliga hyrespriser från svenska uthyrningsfirmor, kan variera mellan orter och leverantörer.
               </p>
             </div>
-          )}
-        </div>
-      )}
-
-      {steps && (
-        <div className="guide-box">
-          <button className="guide-toggle" onClick={() => setShowSteps(!showSteps)}>
-            {showSteps ? 'Dölj byggguide ▲' : 'Visa byggguide – så här går du tillväga ▼'}
-          </button>
-          {showSteps && (
-            <>
-              <ol className="guide-list">
-                {steps.map((step, i) => (
-                  <li key={i}>
-                    {stepIllustrations?.[i] && (
-                      <div
-                        className="step-illustration"
-                        dangerouslySetInnerHTML={{ __html: stepIllustrations[i] }}
-                      />
-                    )}
-                    {step}
-                  </li>
-                ))}
-              </ol>
-              <p className="disclaimer">
-                Generell vägledning – följ alltid tillverkarens anvisningar och lokala byggregler.
-              </p>
-            </>
-          )}
-        </div>
-      )}
-    </>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 

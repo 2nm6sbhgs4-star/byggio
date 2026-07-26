@@ -21,13 +21,15 @@ function ProjectPage() {
   return (
     <div className="project-page">
       <Link to="/" className="back-link">← Tillbaka</Link>
-      {project.icon.startsWith('<svg') ? (
-  <div className="icon" dangerouslySetInnerHTML={{ __html: project.icon }} />
-) : (
-  <div className="icon">{project.icon}</div>
-)}
-      <h1>{project.title}</h1>
-      <p>{project.text}</p>
+      <div className="project-intro">
+        {project.icon.startsWith('<svg') ? (
+          <div className="icon" dangerouslySetInnerHTML={{ __html: project.icon }} />
+        ) : (
+          <div className="icon">{project.icon}</div>
+        )}
+        <h1>{project.title}</h1>
+        <p>{project.text}</p>
+      </div>
 
       {calcConfig ? (
         <Calculator config={calcConfig} projectSlug={project.slug} projectTitle={project.title} />

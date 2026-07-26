@@ -6,5 +6,6 @@ export const projects = [
     text: "Reglar, trall, skruv och steg-för-steg-guide"
   },
   { slug: "armering-betong", title: "Armering & betong", icon: "🧱", text: "Beräkna betongvolym och armeringsmängd" },
-  { slug: "staket", title: "Staket", icon: "🚧", text: "Stolpar, brädor och infästning" }
+  { slug: "staket", title: "Staket", icon: "🚧", text: "Stolpar, brädor och infästning" },
+  { slug: "blomlador", title: "Blomlådor", icon: "🪴", text: "Virke, skruv och botten för snygga odlingslådor" }
 ]

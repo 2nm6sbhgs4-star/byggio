@@ -1,140 +1,161 @@
+import { isoBox, isoFrameBorder, isoGrid, isoPost, isoPipe, isoDot, isoOutline, isoShadow, isoSvg, palette } from './isoHelpers'
+
+// Shared footprint for the "platta"/"husgrund" slab illustrations.
+const CX = 108
+const CY = 122
+const BX = 4.2
+const BY = 3
+
 export const plattaIllustrations: string[] = [
   // 1. Mät upp och markera ytan
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="50" y="50" width="100" height="60" fill="none" stroke="#f97316" stroke-width="3" stroke-dasharray="8 6"/>
-    <path d="M30 50 v60" stroke="#0f172a" stroke-width="2"/>
-    <path d="M24 50 h12 M24 110 h12" stroke="#0f172a" stroke-width="2"/>
-    <line x1="20" y1="125" x2="180" y2="125" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 2, palette.ground) +
+    isoOutline(CX, CY, 0.25, 0.25, 2.3, BX - 0.5, BY - 0.5, '#f97316', { dash: '5 4' }) +
+    isoPost(CX, CY, 0.25, 0.25, 2, 16, '#0f172a', 3) +
+    isoPost(CX, CY, BX - 0.25, BY - 0.25, 2, 16, '#0f172a', 3)
+  ),
   // 2. Schakta bort matjord, packa bärlager
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <line x1="20" y1="110" x2="180" y2="110" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-    <rect x="50" y="95" width="100" height="15" fill="#cbd5e1"/>
-    <path d="M140 80 l25 -20 M165 60 l-8 2 M165 60 l-2 8" stroke="#0f172a" stroke-width="3" stroke-linecap="round" fill="none"/>
-    <ellipse cx="130" cy="95" rx="10" ry="4" fill="#475569"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
+    isoGrid(CX, CY, 0, 0, 12, BX, BY, 5, 4, '#94a3b8', 1)
+  ),
   // 3. Bygg formsättning i trä
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="45" y="55" width="110" height="55" fill="none" stroke="#f97316" stroke-width="6"/>
-    <line x1="45" y1="55" x2="35" y2="45" stroke="#0f172a" stroke-width="3"/>
-    <line x1="155" y1="55" x2="165" y2="45" stroke="#0f172a" stroke-width="3"/>
-  </svg>`,
-  // 4. Lägg armeringsnät med distansklossar
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="45" y="55" width="110" height="55" fill="none" stroke="#475569" stroke-width="2"/>
-    <line x1="45" y1="70" x2="155" y2="70" stroke="#f97316" stroke-width="2"/>
-    <line x1="45" y1="85" x2="155" y2="85" stroke="#f97316" stroke-width="2"/>
-    <line x1="45" y1="100" x2="155" y2="100" stroke="#f97316" stroke-width="2"/>
-    <line x1="70" y1="55" x2="70" y2="110" stroke="#f97316" stroke-width="2"/>
-    <line x1="100" y1="55" x2="100" y2="110" stroke="#f97316" stroke-width="2"/>
-    <line x1="130" y1="55" x2="130" y2="110" stroke="#f97316" stroke-width="2"/>
-    <rect x="65" y="105" width="10" height="8" fill="#0f172a"/>
-    <rect x="125" y="105" width="10" height="8" fill="#0f172a"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
+    isoFrameBorder(CX, CY, 0, 0, 12, BX, BY, 6, 0.35, palette.wood)
+  ),
+  // 4. Lägg armeringsnät, lyft med distansklossar
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
+    isoFrameBorder(CX, CY, 0, 0, 12, BX, BY, 6, 0.35, palette.wood) +
+    isoDot(CX, CY, 0.5, 0.5, 12, 2, '#0f172a') +
+    isoDot(CX, CY, BX - 0.5, BY - 0.5, 12, 2, '#0f172a') +
+    isoGrid(CX, CY, 0.3, 0.3, 15, BX - 0.6, BY - 0.6, 4, 3, '#f97316', 1.6)
+  ),
   // 5. Blanda och gjut betongen, jämna med rätskiva
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="45" y="70" width="110" height="40" fill="#cbd5e1"/>
-    <path d="M60 60 l70 0 l-10 15 l-50 0 z" fill="#94a3b8"/>
-    <line x1="45" y1="70" x2="155" y2="70" stroke="#f97316" stroke-width="4"/>
-    <path d="M100 70 v-25" stroke="#0f172a" stroke-width="2"/>
-    <path d="M92 45 h16" stroke="#0f172a" stroke-width="2"/>
-  </svg>`,
-  // 6. Låt härda, håll fuktig
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="45" y="70" width="110" height="35" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
-    <circle cx="70" cy="55" r="4" fill="#38bdf8"/>
-    <circle cx="100" cy="45" r="4" fill="#38bdf8"/>
-    <circle cx="130" cy="55" r="4" fill="#38bdf8"/>
-    <path d="M155 60 a15 15 0 1 1 -0.1 0" fill="none" stroke="#f97316" stroke-width="2"/>
-    <path d="M155 53 v8 l6 4" stroke="#f97316" stroke-width="2" fill="none"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
+    isoBox(CX, CY, 0.15, 0.15, 12, BX - 0.3, BY - 0.3, 6, palette.wetConcrete) +
+    isoFrameBorder(CX, CY, 0, 0, 12, BX, BY, 6, 0.35, palette.wood) +
+    isoBox(CX, CY, -0.3, 1.3, 18, BX + 0.6, 0.4, 1.2, palette.wood)
+  ),
+  // 6. Låt betongen härda, håll fuktig
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
+    isoBox(CX, CY, 0, 0, 12, BX, BY, 6, palette.concrete) +
+    isoDot(CX, CY, 0.8, 2.4, 26, 3, '#38bdf8') +
+    isoDot(CX, CY, 2.1, 2.7, 30, 3, '#38bdf8') +
+    isoDot(CX, CY, 3.2, 2.2, 24, 3, '#38bdf8')
+  ),
 ]
 
 export const husgrundIllustrations: string[] = [
   // 1. Schakta ur till fast botten, packa bärlager
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="40" y="90" width="120" height="20" fill="#cbd5e1"/>
-    <path d="M40 90 h120 l-10 -15 h-100 z" fill="#94a3b8"/>
-    <line x1="20" y1="110" x2="180" y2="110" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
+    isoGrid(CX, CY, 0, 0, 12, BX, BY, 5, 4, '#94a3b8', 1)
+  ),
   // 2. Lägg ut cellplastisolering
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="45" y="85" width="110" height="14" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"/>
-    <rect x="45" y="70" width="110" height="14" fill="#7dd3fc" stroke="#0f172a" stroke-width="1.5"/>
-    <line x1="20" y1="99" x2="180" y2="99" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
+    isoBox(CX, CY, 0, 0, 12, BX, BY, 8, palette.insulation) +
+    isoGrid(CX, CY, 0, 0, 20, BX, BY, 3, 2, '#0284c7', 1)
+  ),
   // 3. Montera kantelement, lägg armeringsnät
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="45" y="55" width="110" height="55" fill="none" stroke="#f97316" stroke-width="6"/>
-    <line x1="45" y1="75" x2="155" y2="75" stroke="#475569" stroke-width="2"/>
-    <line x1="45" y1="92" x2="155" y2="92" stroke="#475569" stroke-width="2"/>
-    <line x1="80" y1="55" x2="80" y2="110" stroke="#475569" stroke-width="2"/>
-    <line x1="120" y1="55" x2="120" y2="110" stroke="#475569" stroke-width="2"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
+    isoBox(CX, CY, 0, 0, 12, BX, BY, 8, palette.insulation) +
+    isoFrameBorder(CX, CY, 0, 0, 20, BX, BY, 6, 0.35, palette.wood) +
+    isoGrid(CX, CY, 0.3, 0.3, 23, BX - 0.6, BY - 0.6, 4, 3, '#f97316', 1.6)
+  ),
   // 4. Dra in rör för VA/el
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="45" y="55" width="110" height="55" fill="none" stroke="#94a3b8" stroke-width="2"/>
-    <path d="M60 110 v-30 q0 -10 15 -10 h20" fill="none" stroke="#f97316" stroke-width="5" stroke-linecap="round"/>
-    <path d="M140 110 v-20 q0 -10 -15 -10 h-15" fill="none" stroke="#0f172a" stroke-width="5" stroke-linecap="round"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
+    isoBox(CX, CY, 0, 0, 12, BX, BY, 8, palette.insulation) +
+    isoFrameBorder(CX, CY, 0, 0, 20, BX, BY, 6, 0.35, palette.wood) +
+    isoPipe(CX, CY, 0.2, BX - 0.2, 1, 21, '#f97316') +
+    isoPipe(CX, CY, 0.2, BX - 0.2, 2, 21, '#334155')
+  ),
   // 5. Gjut plattan, jämna ytan
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="45" y="70" width="110" height="40" fill="#cbd5e1"/>
-    <line x1="45" y1="70" x2="155" y2="70" stroke="#f97316" stroke-width="4"/>
-    <path d="M60 60 l70 0 l-10 15 l-50 0 z" fill="#94a3b8"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
+    isoBox(CX, CY, 0, 0, 12, BX, BY, 8, palette.insulation) +
+    isoBox(CX, CY, 0.15, 0.15, 20, BX - 0.3, BY - 0.3, 6, palette.wetConcrete) +
+    isoFrameBorder(CX, CY, 0, 0, 20, BX, BY, 6, 0.35, palette.wood) +
+    isoBox(CX, CY, -0.3, 1.3, 26, BX + 0.6, 0.4, 1.2, palette.wood)
+  ),
   // 6. Låt härda, skydda mot uttorkning/frost
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="45" y="70" width="110" height="35" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
-    <path d="M45 70 q55 -15 110 0" fill="none" stroke="#f97316" stroke-width="3" stroke-dasharray="6 5"/>
-    <path d="M100 30 l0 15 M92 40 l16 0" stroke="#0f172a" stroke-width="2"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
+    isoBox(CX, CY, 0, 0, 12, BX, BY, 8, palette.insulation) +
+    isoBox(CX, CY, 0, 0, 20, BX, BY, 6, palette.concrete) +
+    isoOutline(CX, CY, -0.2, -0.2, 27, BX + 0.4, BY + 0.4, '#38bdf8', { dash: '5 4', fill: '#38bdf8', strokeWidth: 2 })
+  ),
 ]
+
+// Wall footprint for the "stödmur" illustrations (length x thickness).
+const WCX = 96
+const WCY = 128
+const WX = 5.5
+const WYF = 2.64 // fundament width (wider than the wall itself)
 
 export const murIllustrations: string[] = [
   // 1. Gräv ur, lägg stabil grund/fundament
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="45" y="95" width="110" height="15" fill="#cbd5e1"/>
-    <path d="M45 95 h110 l-8 -12 h-94 z" fill="#94a3b8"/>
-    <line x1="20" y1="110" x2="180" y2="110" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(WCX, WCY, 0, 0, WX, WYF) +
+    isoBox(WCX, WCY, 0, 0, 0, WX, WYF, 8, palette.gravel)
+  ),
   // 2. Bygg formsättning på båda sidor
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="70" y="35" width="12" height="80" fill="#f97316"/>
-    <rect x="118" y="35" width="12" height="80" fill="#f97316"/>
-    <line x1="20" y1="115" x2="180" y2="115" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(WCX, WCY, 0, 0, WX, WYF) +
+    isoBox(WCX, WCY, 0, 0, 0, WX, WYF, 8, palette.gravel) +
+    isoBox(WCX, WCY, 0, 2.07, 8, WX, 0.22, 42, palette.wood) +
+    isoBox(WCX, WCY, 0, 0.35, 8, WX, 0.22, 42, palette.wood)
+  ),
   // 3. Placera armeringsnät/armeringsjärn centrerat
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="70" y="35" width="12" height="80" fill="none" stroke="#94a3b8" stroke-width="2"/>
-    <rect x="118" y="35" width="12" height="80" fill="none" stroke="#94a3b8" stroke-width="2"/>
-    <line x1="95" y1="40" x2="95" y2="110" stroke="#0f172a" stroke-width="3"/>
-    <line x1="105" y1="40" x2="105" y2="110" stroke="#0f172a" stroke-width="3"/>
-    <line x1="90" y1="55" x2="110" y2="55" stroke="#0f172a" stroke-width="3"/>
-    <line x1="90" y1="90" x2="110" y2="90" stroke="#0f172a" stroke-width="3"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(WCX, WCY, 0, 0, WX, WYF) +
+    isoBox(WCX, WCY, 0, 0, 0, WX, WYF, 8, palette.gravel) +
+    isoBox(WCX, WCY, 0, 2.07, 8, WX, 0.22, 42, palette.wood) +
+    isoPost(WCX, WCY, 0.7, 1.32, 8, 34, '#334155', 2.6) +
+    isoPost(WCX, WCY, 2.1, 1.32, 8, 34, '#334155', 2.6) +
+    isoPost(WCX, WCY, 3.5, 1.32, 8, 34, '#334155', 2.6) +
+    isoPost(WCX, WCY, 4.9, 1.32, 8, 34, '#334155', 2.6) +
+    isoBox(WCX, WCY, 0, 0.35, 8, WX, 0.22, 42, palette.wood)
+  ),
   // 4. Gjut i omgångar, vibrera bort luft
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="70" y="35" width="12" height="80" fill="#f97316"/>
-    <rect x="118" y="35" width="12" height="80" fill="#f97316"/>
-    <rect x="82" y="60" width="36" height="55" fill="#cbd5e1"/>
-    <path d="M100 60 q6 -8 0 -16 q-6 8 0 16" stroke="#0f172a" stroke-width="2" fill="none"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(WCX, WCY, 0, 0, WX, WYF) +
+    isoBox(WCX, WCY, 0, 0, 0, WX, WYF, 8, palette.gravel) +
+    isoBox(WCX, WCY, 0, 2.07, 8, WX, 0.22, 42, palette.wood) +
+    isoBox(WCX, WCY, 0.3, 0.57, 8, WX - 0.6, 1.5, 20, palette.wetConcrete) +
+    isoBox(WCX, WCY, 0, 0.35, 8, WX, 0.22, 42, palette.wood)
+  ),
   // 5. Låt formen sitta kvar några dygn
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="70" y="35" width="12" height="80" fill="#f97316"/>
-    <rect x="118" y="35" width="12" height="80" fill="#f97316"/>
-    <rect x="82" y="35" width="36" height="80" fill="#cbd5e1"/>
-    <path d="M150 55 a15 15 0 1 1 -0.1 0" fill="none" stroke="#0f172a" stroke-width="2"/>
-    <path d="M150 48 v8 l6 4" stroke="#0f172a" stroke-width="2" fill="none"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(WCX, WCY, 0, 0, WX, WYF) +
+    isoBox(WCX, WCY, 0, 0, 0, WX, WYF, 8, palette.gravel) +
+    isoBox(WCX, WCY, 0, 2.07, 8, WX, 0.22, 42, palette.wood) +
+    isoBox(WCX, WCY, 0.3, 0.57, 8, WX - 0.6, 1.5, 42, palette.wetConcrete) +
+    isoBox(WCX, WCY, 0, 0.35, 8, WX, 0.22, 42, palette.wood)
+  ),
   // 6. Dränering bakom muren
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="90" y="35" width="16" height="80" fill="#94a3b8"/>
-    <circle cx="130" cy="90" r="3" fill="#475569"/>
-    <circle cx="140" cy="95" r="3" fill="#475569"/>
-    <circle cx="132" cy="100" r="3" fill="#475569"/>
-    <circle cx="145" cy="85" r="3" fill="#475569"/>
-    <path d="M120 105 h60" stroke="#f97316" stroke-width="4" stroke-linecap="round"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(WCX, WCY, 0, 0, WX, WYF) +
+    isoBox(WCX, WCY, 0, 0, 0, WX, WYF, 8, palette.gravel) +
+    isoBox(WCX, WCY, 0.3, 0.57, 8, WX - 0.6, 1.5, 42, palette.concrete) +
+    isoBox(WCX, WCY, 0.3, 2.1, 8, WX - 0.6, 0.5, 16, palette.gravel)
+  ),
 ]

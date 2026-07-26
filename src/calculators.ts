@@ -1,6 +1,7 @@
 import { altanIllustrations } from './altanIllustrations'
 import { plattaIllustrations, husgrundIllustrations, murIllustrations } from './armeringIllustrations'
 import { staketIllustrations } from './staketIllustrations'
+import { blomladorIllustrations } from './blomladorIllustrations'
 
 export type FieldOption = { value: string; label: string }
 
@@ -75,6 +76,27 @@ const staketRegelDimensioner: Record<string, { prisPerM: number; namn: string }>
   '34x45': { prisPerM: 18, namn: '34×45 mm' },
   '45x70': { prisPerM: 28, namn: '45×70 mm' },
   '45x95': { prisPerM: 35, namn: '45×95 mm' },
+}
+
+const bradDimensioner: Record<string, { bradbredd: number; prisPerM: number; namn: string }> = {
+  '22x95': { bradbredd: 0.095, prisPerM: 20, namn: '22×95 mm obehandlad furu' },
+  '22x120': { bradbredd: 0.12, prisPerM: 24, namn: '22×120 mm obehandlad furu' },
+  'lark': { bradbredd: 0.07, prisPerM: 38, namn: '21×70 mm lärk, obehandlad' },
+}
+
+const bottenTyper: Record<string, { namn: string; getRows: (bottenArea: number) => ResultRow[] }> = {
+  trall: {
+    namn: 'Trallbotten (dränerande springor)',
+    getRows: (bottenArea) => [
+      { label: 'Bottenbrädor (samma virke, lagda med springor)', quantity: bottenArea * 10, unit: 'm', decimals: 1, pricePerUnit: 22 },
+    ]
+  },
+  markduk: {
+    namn: 'Markduk (ingen botten)',
+    getRows: (bottenArea) => [
+      { label: 'Markduk/fiberduk', quantity: bottenArea, unit: 'm²', decimals: 1, pricePerUnit: 15 },
+    ]
+  },
 }
 
 const fastmetoder: Record<string, { namn: string; getRows: (antalStolpar: number) => ResultRow[] }> = {
@@ -210,17 +232,18 @@ export const calculators: Record<string, CalculatorConfig> = {
           ]
         },
         steps: [
-          'Mät upp och markera ytan, kontrollera avvattning så vatten inte blir stående.',
-          'Schakta bort matjord och packa ett bärlager av grus eller makadam.',
-          'Bygg en formsättning i trä runt kanten, i rätt höjd och våg.',
-          'Lägg ut armeringsnät, lyft det något med distansklossar.',
-          'Blanda och gjut betongen, jämna till ytan med en rätskiva.',
-          'Låt betongen härda i minst en vecka innan full belastning.',
+          'Mät upp och markera ytan med snöre och käppar. Kontrollera avvattningen redan nu – ytan bör luta svagt bort från huset så att vatten inte blir stående och tränger in i konstruktionen.',
+          'Schakta bort matjord (den håller fukt, komprimeras ojämnt och kan ruttna) och packa istället ett bärlager av grus eller makadam. Bärlagret fördelar plattans tyngd jämnt och dränerar bort vatten underifrån.',
+          'Bygg en formsättning i trä runt kanten, i rätt höjd och våg. Formen håller den flytande betongen på plats och bestämmer plattans slutliga höjd och lutning – kontrollera noga med vattenpass innan du fortsätter.',
+          'Lägg ut armeringsnät och lyft det ca 3–5 cm med distansklossar så det hamnar centrerat i betongen. Armeringen tar upp de dragkrafter som uppstår när plattan belastas eller rör sig av temperaturskillnader; ligger nätet i botten gör det ingen nytta.',
+          'Blanda och gjut betongen i ett sammanhängande arbetspass om möjligt, så plattan blir enhetlig. Jämna till ytan med en rätskiva som dras mot formkanterna för en plan yta, och arbeta bort eventuella luftfickor.',
+          'Låt betongen härda i minst en vecka innan full belastning – den fortsätter dock att hårdna i flera veckor till. Håll ytan fuktig eller skyddad de första dygnen så den inte torkar ut för fort och spricker.',
         ],
         stepIllustrations: plattaIllustrations,
         tools: [
           { name: 'Markvibrator (packa bärlager)', pricePerDay: 370 },
-          { name: 'Betongblandare', pricePerDay: 200 },
+          { name: 'Betongvisp (visp till borrmaskin, för mindre mängder)', pricePerDay: 120 },
+          { name: 'Betongblandare, tombola (roterande trumma, för större mängder)', pricePerDay: 280 },
           { name: 'Rätskiva', own: true },
           { name: 'Spade/skottkärra', own: true },
         ],
@@ -246,17 +269,18 @@ export const calculators: Record<string, CalculatorConfig> = {
           ]
         },
         steps: [
-          'Schakta ur till fast botten och packa ett bärlager.',
-          'Lägg ut cellplastisolering enligt vald tjocklek.',
-          'Montera kantelement och lägg ut armeringsnät.',
-          'Dra in rör för vatten, avlopp och el innan gjutning om det behövs.',
-          'Gjut plattan och jämna till ytan.',
-          'Låt härda och skydda mot uttorkning och frost de första dygnen.',
+          'Schakta ur till fast, orörd botten och packa ett bärlager av grus eller makadam. Grunden måste vila på fast mark – lös fyllning sätter sig ojämnt över tid och kan spräcka plattan.',
+          'Lägg ut cellplastisolering enligt vald tjocklek. Isoleringen under plattan hindrar kylan i marken från att tränga upp genom huset och motverkar tjälskjutning; ju tjockare isolering desto varmare golv och lägre uppvärmningskostnad.',
+          'Montera kantelement runt hela ytan och lägg ut armeringsnät ovanpå isoleringen. Kantelementen fungerar både som form vid gjutningen och som permanent isolering i plattans kant, medan armeringen tar upp krympnings- och belastningskrafter i betongen.',
+          'Dra in rör för vatten, avlopp, el och eventuell golvvärme innan gjutning. Allt som ska ligga under eller i plattan måste vara på plats och kontrollerat tätt nu – efter gjutning går det bara att komma åt genom att bila upp betongen.',
+          'Gjut plattan och jämna till ytan med en rätskiva mot kantelementens överkant, som ger dig rätt höjd och lutning automatiskt.',
+          'Låt härda och skydda mot uttorkning och frost de första dygnen – frysning i ohärdad betong kan spränga sönder strukturen permanent, så täck och/eller värm vid behov om det är kallt ute.',
         ],
         stepIllustrations: husgrundIllustrations,
         tools: [
           { name: 'Markvibrator (packa bärlager)', pricePerDay: 370 },
-          { name: 'Betongblandare', pricePerDay: 200 },
+          { name: 'Betongvisp (visp till borrmaskin, för mindre mängder)', pricePerDay: 120 },
+          { name: 'Betongblandare, tombola (roterande trumma, för större mängder)', pricePerDay: 280 },
           { name: 'Rätskiva', own: true },
         ],
       },
@@ -278,16 +302,17 @@ export const calculators: Record<string, CalculatorConfig> = {
           ]
         },
         steps: [
-          'Gräv ur och lägg en stabil grund/fundament under muren.',
-          'Bygg formsättning på båda sidor av muren.',
-          'Placera armeringsnät eller armeringsjärn centrerat i formen.',
-          'Blanda och gjut betongen i omgångar, vibrera bort luftbubblor.',
-          'Låt formen sitta kvar minst några dygn innan du river den.',
-          'Se till att muren har dränering bakom sig om den ska hålla emot jordmassor.',
+          'Gräv ur och lägg en stabil grund/fundament under muren, ner till frostfritt djup. Utan det kan tjällyftning över vintrarna gradvis flytta eller spräcka muren.',
+          'Bygg formsättning på båda sidor av muren och håll den på plats med distanser i rätt avstånd. Formen håller den flytande betongen på plats tills den härdat och avgör murens tjocklek och form.',
+          'Placera armeringsnät eller armeringsjärn centrerat i formen. En stödmur belastas av jordtryck från sidan som vill böja och spräcka den – armeringen tar upp just dessa böjkrafter, och behovet ökar ju högre muren är.',
+          'Blanda och gjut betongen i omgångar om ca 30–50 cm åt gången, och vibrera varje lager. Vibreringen får betongen att fylla ut formen helt och driver ut luftbubblor som annars gör muren porös och svagare.',
+          'Låt formen sitta kvar minst några dygn innan du river den – betongen måste hinna få tillräcklig hållfasthet för att bära sin egen vikt själv. Räkna med längre tid i kallt väder.',
+          'Se till att muren har dränering bakom sig om den ska hålla emot jordmassor. Utan dränering bygger vattentryck upp bakom muren, vilket kraftigt ökar belastningen och kan få den att luta eller välta.',
         ],
         stepIllustrations: murIllustrations,
         tools: [
-          { name: 'Betongblandare', pricePerDay: 200 },
+          { name: 'Betongvisp (visp till borrmaskin, för mindre mängder)', pricePerDay: 120 },
+          { name: 'Betongblandare, tombola (roterande trumma, för större mängder)', pricePerDay: 280 },
           { name: 'Betongvibrator', pricePerDay: 300 },
           { name: 'Spade', own: true },
         ],
@@ -364,6 +389,64 @@ export const calculators: Record<string, CalculatorConfig> = {
       { name: 'Vattenpass', own: true },
       { name: 'Cirkelsåg', own: true },
       { name: 'Skruvdragare', own: true },
+    ],
+  },
+
+  blomlador: {
+    fields: [
+      { key: 'antal', label: 'Antal lådor', unit: 'st', default: '1' },
+      { key: 'langd', label: 'Längd (per låda)', unit: 'cm' },
+      { key: 'bredd', label: 'Bredd (per låda)', unit: 'cm' },
+      { key: 'hojd', label: 'Höjd (per låda)', unit: 'cm', default: '40' },
+      {
+        key: 'bradimension', label: 'Fasadbrädor, dimension', unit: '', type: 'select', default: '22x95',
+        options: [
+          { value: '22x95', label: '22×95 mm obehandlad furu' },
+          { value: '22x120', label: '22×120 mm obehandlad furu' },
+          { value: 'lark', label: '21×70 mm lärk, obehandlad' },
+        ]
+      },
+      {
+        key: 'botten', label: 'Botten', unit: '', type: 'select', default: 'trall',
+        options: [
+          { value: 'trall', label: 'Trallbotten (dränerande springor)' },
+          { value: 'markduk', label: 'Markduk (ingen botten)' },
+        ]
+      },
+    ],
+    calculate: (v, raw) => {
+      const bradInfo = bradDimensioner[raw.bradimension] ?? bradDimensioner['22x95']
+      const antalRader = Math.max(1, Math.round((v.hojd / 100) / bradInfo.bradbredd))
+      const omkrets = 2 * (v.langd + v.bredd) / 100
+      const bradLopmeter = omkrets * antalRader * v.antal
+      const hornregelLopmeter = 4 * (v.hojd / 100) * v.antal
+      const skruvAtgang = antalRader * 4 * v.antal
+
+      const bottenInfo = bottenTyper[raw.botten] ?? bottenTyper['trall']
+      const bottenArea = (v.langd * v.bredd / 10000) * v.antal
+      const bottenRows = bottenInfo.getRows(bottenArea)
+
+      return [
+        { label: `Fasadbrädor (${bradInfo.namn})`, quantity: bradLopmeter, unit: 'm', decimals: 1, pricePerUnit: bradInfo.prisPerM },
+        { label: 'Hörnreglar 34×34 mm', quantity: hornregelLopmeter, unit: 'm', decimals: 1, pricePerUnit: 15 },
+        { label: 'Skruv (4,0×40 mm, träskruv)', quantity: skruvAtgang, unit: 'st', decimals: 0, pricePerUnit: 1.5 },
+        ...bottenRows,
+      ]
+    },
+    steps: [
+      'Bestäm mått och kapa fyra hörnreglar (t.ex. 34×34 mm) i lådans höjd per låda. Reglarna är lådans bärande stomme som alla brädor skruvas fast i, så se till att de är exakt lika långa – annars blir lådan skev.',
+      'Skruva fast den första brädraden runt hörnreglarna nedtill och kontrollera med en vinkelhake att alla fyra hörn blir exakt 90 grader. Ett snett första varv förstärks i varje rad du bygger på, så lägg extra omsorg här.',
+      'Bygg på med resterande rader brädor uppåt, en i taget, och kontrollera regelbundet med vattenpass att lådan står rakt. Lämna ett par millimeters glapp mellan brädorna så virket kan svälla och krympa med fukten utan att spricka eller bukta.',
+      'Borra dräneringshål i botten, eller lägg en trallbotten med springor mellan brädorna. Utan dränering blir jorden vattendränkt och rötterna kan kvävas eller ruttna.',
+      'Ställ lådan på ett par klossar eller lägg markduk under om den ska stå direkt på jord eller altan, så botten inte ligger i ständig fukt och ruttnar i förtid.',
+      'Olja virket med linolja eller en utomhusolja avsedd för odlingslådor innan du fyller lådan med jord – det förlänger livslängden avsevärt, särskilt i de utsatta hörnskarvarna. Använd aldrig tryckimpregnerat virke eller impregneringsmedel till odlingslådor, eftersom kemikalierna kan läcka ut i jorden där du odlar.',
+    ],
+    stepIllustrations: blomladorIllustrations,
+    tools: [
+      { name: 'Cirkelsåg', own: true },
+      { name: 'Skruvdragare/borrmaskin', own: true },
+      { name: 'Vattenpass', own: true },
+      { name: 'Vinkelhake', own: true },
     ],
   },
 }
