@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth'
+import { onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut, type User } from 'firebase/auth'
 import { auth, googleProvider } from './firebase'
 
 type AuthContextType = {
@@ -20,11 +20,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(u)
       setLoading(false)
     })
+    // Picks up the result after signInWithRedirect sends the user back here.
+    getRedirectResult(auth).catch((err) => {
+      console.error('Inloggning misslyckades:', err)
+    })
     return unsubscribe
   }, [])
 
   const loginWithGoogle = async () => {
-    await signInWithPopup(auth, googleProvider)
+    // A full-page redirect (rather than a popup) so login also works with ad
+    // blockers and privacy settings that block popups or cross-window auth.
+    await signInWithRedirect(auth, googleProvider)
   }
 
   const logout = async () => {
