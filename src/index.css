@@ -215,6 +215,12 @@ body {
 .policy-content p { color: var(--color-muted); line-height: 1.6; margin-bottom: 8px; }
 .policy-content a { color: var(--color-primary); }
 
+/* Auth error banner */
+.auth-error-banner { background: #fef2f2; border-bottom: 1px solid #fecaca; color: #991b1b; padding: 14px 40px; display: flex; justify-content: center; align-items: center; gap: 16px; text-align: center; }
+.auth-error-banner p { margin: 0; font-size: 14px; max-width: 700px; line-height: 1.5; }
+.auth-error-close { flex-shrink: 0; background: transparent; border: none; color: #991b1b; font-size: 15px; cursor: pointer; padding: 4px 8px; line-height: 1; }
+.auth-error-close:hover { opacity: 0.7; }
+
 /* Cookie consent */
 .cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--color-ink); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; z-index: 100; box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.2); }
 .cookie-banner p { margin: 0; font-size: 14px; max-width: 600px; line-height: 1.5; }

@@ -9,6 +9,7 @@ import ContractorDashboardPage from './ContractorDashboardPage'
 import CookieConsent from './CookieConsent'
 import Footer from './Footer'
 import FeedbackPage from './FeedbackPage'
+import AuthErrorBanner from './AuthErrorBanner'
 
 function Home() {
   const scrollToProjects = () => {
@@ -33,6 +34,7 @@ function App() {
   return (
     <div className="app">
       <Navbar />
+      <AuthErrorBanner />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/integritetspolicy" element={<PrivacyPage />} />
