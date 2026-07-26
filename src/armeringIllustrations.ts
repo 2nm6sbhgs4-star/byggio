@@ -1,4 +1,4 @@
-import { isoBox, isoFrameBorder, isoGrid, isoPost, isoPipe, isoDot, isoOutline, isoShadow, isoSvg, palette } from './isoHelpers'
+import { isoBox, isoFrameBorder, isoGrid, isoPost, isoPipe, isoStirrup, isoDot, isoOutline, isoShadow, isoPt, isoSvg, palette } from './isoHelpers'
 
 // Shared footprint for the "platta"/"husgrund" slab illustrations.
 const CX = 108
@@ -55,6 +55,41 @@ export const plattaIllustrations: string[] = [
   ),
 ]
 
+// A cutaway detail of the kantbalk, showing the reinforcement cage through
+// semi-transparent concrete: 4 longitudinal Ø12 bars + byglar cc 500.
+// Note: X/Y are grid units (scaled ~22px each) but Z/height is in raw pixels,
+// so the beam's pixel height must be chosen on that same ~22px-per-unit scale.
+const KCX = 78
+const KCY = 100
+const KL = 5.3
+const KW = 1.3
+const KH = 28 // pixels - roughly KW * 22 so the beam reads as a square-ish beam, not a flat plank
+const KCOVER_Y = 0.22
+const KCOVER_Z = 6
+const KSTIRRUP_INSET_Y = 0.12
+const KSTIRRUP_INSET_Z = 3
+const kantbalkDetail = isoSvg(
+  isoShadow(KCX, KCY, 0, 0, KL, KW, 0.14) +
+  isoPipe(KCX, KCY, 0, KL, KCOVER_Y, KCOVER_Z, '#334155', 2.8) +
+  isoPipe(KCX, KCY, 0, KL, KW - KCOVER_Y, KCOVER_Z, '#334155', 2.8) +
+  isoPipe(KCX, KCY, 0, KL, KW - KCOVER_Y, KH - KCOVER_Z, '#334155', 2.8) +
+  isoPipe(KCX, KCY, 0, KL, KCOVER_Y, KH - KCOVER_Z, '#334155', 2.8) +
+  [0.35, 1.7, 3.05, 4.4].map((x) =>
+    isoStirrup(KCX, KCY, x, KSTIRRUP_INSET_Y, KSTIRRUP_INSET_Z, KW - 2 * KSTIRRUP_INSET_Y, KH - 2 * KSTIRRUP_INSET_Z, '#475569', 2)
+  ).join('') +
+  isoBox(KCX, KCY, 0, 0, 0, KL, KW, KH, palette.wetConcrete, 1.5, 0.55) +
+  (() => {
+    const [ax1, ay1] = isoPt(KCX, KCY, 1.7, 0, KH + 8)
+    const [ax2, ay2] = isoPt(KCX, KCY, 3.05, 0, KH + 8)
+    return `<line x1="${ax1.toFixed(1)}" y1="${ay1.toFixed(1)}" x2="${ax2.toFixed(1)}" y2="${ay2.toFixed(1)}" stroke="#0f172a" stroke-width="1.2"/>` +
+      `<line x1="${ax1.toFixed(1)}" y1="${(ay1 - 3).toFixed(1)}" x2="${ax1.toFixed(1)}" y2="${(ay1 + 3).toFixed(1)}" stroke="#0f172a" stroke-width="1.2"/>` +
+      `<line x1="${ax2.toFixed(1)}" y1="${(ay2 - 3).toFixed(1)}" x2="${ax2.toFixed(1)}" y2="${(ay2 + 3).toFixed(1)}" stroke="#0f172a" stroke-width="1.2"/>` +
+      `<text x="${((ax1 + ax2) / 2).toFixed(1)}" y="${(ay1 - 6).toFixed(1)}" font-size="9" text-anchor="middle" fill="#0f172a">cc 500</text>`
+  })() +
+  `<text x="${(isoPt(KCX, KCY, 0.3, KW, KH / 2)[0] - 18).toFixed(1)}" y="${(isoPt(KCX, KCY, 0.3, KW, KH / 2)[1] + 4).toFixed(1)}" font-size="9" fill="#0f172a">4 st Ø12</text>`,
+  '0 0 220 150'
+)
+
 export const husgrundIllustrations: string[] = [
   // 1. Schakta ur till fast botten, packa bärlager
   isoSvg(
@@ -77,7 +112,9 @@ export const husgrundIllustrations: string[] = [
     isoFrameBorder(CX, CY, 0, 0, 20, BX, BY, 6, 0.35, palette.wood) +
     isoGrid(CX, CY, 0.3, 0.3, 23, BX - 0.6, BY - 0.6, 4, 3, '#f97316', 1.6)
   ),
-  // 4. Dra in rör för VA/el
+  // 4. Kantbalkens armering i detalj
+  kantbalkDetail,
+  // 5. Dra in rör för VA/el
   isoSvg(
     isoShadow(CX, CY, 0, 0, BX, BY) +
     isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
@@ -86,7 +123,7 @@ export const husgrundIllustrations: string[] = [
     isoPipe(CX, CY, 0.2, BX - 0.2, 1, 21, '#f97316') +
     isoPipe(CX, CY, 0.2, BX - 0.2, 2, 21, '#334155')
   ),
-  // 5. Gjut plattan, jämna ytan
+  // 6. Gjut plattan, jämna ytan
   isoSvg(
     isoShadow(CX, CY, 0, 0, BX, BY) +
     isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +
@@ -95,7 +132,7 @@ export const husgrundIllustrations: string[] = [
     isoFrameBorder(CX, CY, 0, 0, 20, BX, BY, 6, 0.35, palette.wood) +
     isoBox(CX, CY, -0.3, 1.3, 26, BX + 0.6, 0.4, 1.2, palette.wood)
   ),
-  // 6. Låt härda, skydda mot uttorkning/frost
+  // 7. Låt härda, skydda mot uttorkning/frost
   isoSvg(
     isoShadow(CX, CY, 0, 0, BX, BY) +
     isoBox(CX, CY, 0, 0, 0, BX, BY, 12, palette.gravel) +

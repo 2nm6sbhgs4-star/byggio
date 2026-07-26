@@ -21,15 +21,16 @@ export function isoBox(
   cx: number, cy: number,
   x0: number, y0: number, z0: number,
   X: number, Y: number, H: number,
-  c: IsoColors, strokeWidth = 1.5
+  c: IsoColors, strokeWidth = 1.5, opacity = 1
 ) {
   const p = (x: number, y: number, z: number) => isoPt(cx, cy, x0 + x, y0 + y, z0 + z)
   const top = poly([p(0, 0, H), p(X, 0, H), p(X, Y, H), p(0, Y, H)])
   const right = poly([p(X, 0, 0), p(X, Y, 0), p(X, Y, H), p(X, 0, H)])
   const left = poly([p(0, 0, 0), p(X, 0, 0), p(X, 0, H), p(0, 0, H)])
-  return `<polygon points="${left}" fill="${c.left}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linejoin="round"/>` +
-    `<polygon points="${right}" fill="${c.right}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linejoin="round"/>` +
-    `<polygon points="${top}" fill="${c.top}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linejoin="round"/>`
+  const op = opacity < 1 ? ` fill-opacity="${opacity}"` : ''
+  return `<polygon points="${left}" fill="${c.left}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linejoin="round"${op}/>` +
+    `<polygon points="${right}" fill="${c.right}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linejoin="round"${op}/>` +
+    `<polygon points="${top}" fill="${c.top}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linejoin="round"${op}/>`
 }
 
 // A hollow rectangular border made of four beams (formwork, edge elements, frames).
@@ -83,6 +84,14 @@ export function isoPipe(cx: number, cy: number, xFrom: number, xTo: number, y: n
   const [x1, y1] = isoPt(cx, cy, xFrom, y, z)
   const [x2, y2] = isoPt(cx, cy, xTo, y, z)
   return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linecap="round"/>`
+}
+
+// A rectangular loop standing in the Y-Z plane at fixed x (a rebar stirrup/bygel
+// seen end-on, wrapping around the cross-section of a beam running along x).
+export function isoStirrup(cx: number, cy: number, x: number, y0: number, z0: number, Y: number, H: number, stroke: string, strokeWidth = 2) {
+  const p = (y: number, z: number) => isoPt(cx, cy, x, y0 + y, z0 + z)
+  const pts = [p(0, 0), p(Y, 0), p(Y, H), p(0, H)]
+  return `<polygon points="${poly(pts)}" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linejoin="round"/>`
 }
 
 // A small dot marker on the plane (distansklossar, screws, rivets).

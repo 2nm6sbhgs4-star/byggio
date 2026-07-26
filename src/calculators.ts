@@ -256,22 +256,35 @@ export const calculators: Record<string, CalculatorConfig> = {
           { key: 'bredd', label: 'Bredd', unit: 'm' },
           { key: 'betongtjocklek', label: 'Betongtjocklek', unit: 'cm', default: '15' },
           { key: 'isoleringstjocklek', label: 'Isoleringstjocklek', unit: 'cm', default: '30' },
+          { key: 'kantbalkshojd', label: 'Kantbalkens höjd', unit: 'cm', default: '30' },
         ],
         calculate: (v) => {
           const area = v.langd * v.bredd
           const betongVolym = area * (v.betongtjocklek / 100)
           const isoleringVolym = area * (v.isoleringstjocklek / 100)
           const armeringArea = area * 1.1
+
+          const omkrets = 2 * (v.langd + v.bredd)
+          const kantbalksbredd = 0.3
+          const kantbalkVolym = omkrets * kantbalksbredd * (v.kantbalkshojd / 100)
+          const langsjarnLopmeter = omkrets * 4 // 4 st Ø12 K-järn runt hela kantbalken
+          const antalByglar = Math.ceil(omkrets / 0.5) + 1 // byglar cc 500
+          const bygelLangd = 2 * (kantbalksbredd - 0.05) + 2 * (v.kantbalkshojd / 100 - 0.05) + 0.1
+
           return [
             { label: 'Betong (m³, fabriksblandad)', quantity: betongVolym, unit: 'm³', decimals: 2, pricePerUnit: 2200 },
             { label: 'Cellplastisolering', quantity: isoleringVolym, unit: 'm³', decimals: 2, pricePerUnit: 1400 },
             { label: 'Armeringsnät (150×150/Ø6 mm)', quantity: armeringArea, unit: 'm²', decimals: 1, pricePerUnit: 95 },
+            { label: `Kantbalk, betong (300×${v.kantbalkshojd} mm)`, quantity: kantbalkVolym, unit: 'm³', decimals: 2, pricePerUnit: 2200 },
+            { label: 'Kantbalksarmering, längsgående Ø12 K-järn (4 st)', quantity: langsjarnLopmeter, unit: 'm', decimals: 1, pricePerUnit: 14 },
+            { label: 'Kantbalksarmering, byglar Ø10 K-järn cc 500', quantity: antalByglar, unit: 'st', decimals: 0, pricePerUnit: Math.round(bygelLangd * 11 * 100) / 100 },
           ]
         },
         steps: [
           'Schakta ur till fast, orörd botten och packa ett bärlager av grus eller makadam. Grunden måste vila på fast mark – lös fyllning sätter sig ojämnt över tid och kan spräcka plattan.',
           'Lägg ut cellplastisolering enligt vald tjocklek. Isoleringen under plattan hindrar kylan i marken från att tränga upp genom huset och motverkar tjälskjutning; ju tjockare isolering desto varmare golv och lägre uppvärmningskostnad.',
           'Montera kantelement runt hela ytan och lägg ut armeringsnät ovanpå isoleringen. Kantelementen fungerar både som form vid gjutningen och som permanent isolering i plattans kant, medan armeringen tar upp krympnings- och belastningskrafter i betongen.',
+          'Gjut samtidigt en kantbalk längs hela ytterkanten. Den armeras med 4 st Ø12 K-järn som löper runt hela kanten, hopbundna med byglar (Ø10 K-järn) med cc 500 mm mellanrum – kantbalken stelnar upp plattans kant och tar upp de större punktlaster (t.ex. från väggar och pelare) som annars bara skulle vila på isoleringen.',
           'Dra in rör för vatten, avlopp, el och eventuell golvvärme innan gjutning. Allt som ska ligga under eller i plattan måste vara på plats och kontrollerat tätt nu – efter gjutning går det bara att komma åt genom att bila upp betongen.',
           'Gjut plattan och jämna till ytan med en rätskiva mot kantelementens överkant, som ger dig rätt höjd och lutning automatiskt.',
           'Låt härda och skydda mot uttorkning och frost de första dygnen – frysning i ohärdad betong kan spränga sönder strukturen permanent, så täck och/eller värm vid behov om det är kallt ute.',
