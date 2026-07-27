@@ -340,17 +340,45 @@ export const calculators: Record<string, CalculatorConfig> = {
         ],
         calculate: (v) => {
           const volym = v.langd * v.hojd * (v.tjocklek / 100)
-          const armeringArea = v.langd * v.hojd * 1.1
           const antalSackar = Math.ceil(volym / 0.033)
+
+          // Tjockare murar (≥20 cm) armeras med dubbla nätlager (ett nära
+          // varje sida) istället för ett centrerat lager, ihopbundna upptill
+          // med C-formade byglar så de fungerar som en sammanhängande kub.
+          const dubbelArmering = v.tjocklek >= 20
+          const armeringArea = v.langd * v.hojd * 1.1 * (dubbelArmering ? 2 : 1)
+          const cBygelAvstand = 0.5
+          const antalCByglar = dubbelArmering ? Math.ceil(v.langd / cBygelAvstand) + 1 : 0
+
+          // Formwork (rives efter härdning, så byggs i billigare/obehandlat virke).
+          const formPlywoodArea = 2 * v.langd * v.hojd * 1.1 // båda sidor + spill
+          const studAvstand = 0.5
+          const studerPerSida = Math.ceil(v.langd / studAvstand) + 1
+          const antalStottor = studerPerSida * 2
+          // Stöttorna släpps upp ca 15 cm över formens överkant så en
+          // toppregel kan skruvas i topparna – håller formen på rätt
+          // avstånd utan att behöva köpa gängstänger genom betongen.
+          const stottorLopmeter = antalStottor * (v.hojd + 0.15)
+          const liggareRader = v.hojd > 1.2 ? 3 : 2
+          const liggareLopmeter = liggareRader * 2 * v.langd
+          const toppregelLopmeter = studerPerSida * (v.tjocklek / 100 + 0.1)
+          const formregelLopmeter = stottorLopmeter + liggareLopmeter + toppregelLopmeter
+          const formskruvAtgang = Math.ceil(formPlywoodArea * 12) + studerPerSida * 4
+
           return [
+            { label: 'Formplywood (18 mm, filmbelagd, båda sidor)', quantity: formPlywoodArea, unit: 'm²', decimals: 1, pricePerUnit: 180 },
+            { label: 'Reglar till formstöttor, liggare & toppreglar (45×45 mm)', quantity: formregelLopmeter, unit: 'm', decimals: 1, pricePerUnit: 18 },
+            { label: 'Formskruv', quantity: formskruvAtgang, unit: 'st', decimals: 0, pricePerUnit: 1.5 },
             { label: 'Betong (25 kg-säck)', quantity: antalSackar, unit: 'st', decimals: 0, pricePerUnit: 89 },
-            { label: 'Armeringsnät (150×150/Ø8 mm)', quantity: armeringArea, unit: 'm²', decimals: 1, pricePerUnit: 120 },
+            { label: `Armeringsnät (150×150/Ø8 mm)${dubbelArmering ? ', dubbla lager' : ''}`, quantity: armeringArea, unit: 'm²', decimals: 1, pricePerUnit: 120 },
+            ...(antalCByglar > 0 ? [{ label: 'C-byglar (sluter armeringen upptill, cc 500)', quantity: antalCByglar, unit: 'st', decimals: 0, pricePerUnit: 22 }] : []),
           ]
         },
         steps: [
           'Gräv ur och lägg en stabil grund/fundament under muren, ner till frostfritt djup. Utan det kan tjällyftning över vintrarna gradvis flytta eller spräcka muren.',
-          'Bygg formsättning på båda sidor av muren och håll den på plats med distanser i rätt avstånd. Formen håller den flytande betongen på plats tills den härdat och avgör murens tjocklek och form.',
-          'Placera armeringsnät eller armeringsjärn centrerat i formen. En stödmur belastas av jordtryck från sidan som vill böja och spräcka den – armeringen tar upp just dessa böjkrafter, och behovet ökar ju högre muren är.',
+          'Bygg de två formväggarna av råspont eller plywood, en på vardera sidan om var muren ska stå. Förstärk varje vägg med lodräta stöttor (c/c ca 40–60 cm) och liggande reglar (2–3 rader i höjdled) på utsidan – stöttorna och liggarna bildar tillsammans ett rutnät som håller skivorna raka och tar upp trycket från den flytande betongen så väggen inte buktar mellan skruvarna.',
+          'Håll de två formväggarna på exakt rätt inbördes avstånd (murens tjocklek) upptill: släpp upp stöttorna ca 15 cm över formens överkant och skruva en toppregel tvärs över varje stöttopar – billigare och enklare än att köpa gängstänger genom formen. Stötta sedan upp stöttorna utåt med sneda avstyvningar ner i marktäta stag var 1–1,5 meter. Utan bra stöttning kan formen antingen bukta ut i mitten eller tippa när den fylls med tung, flytande betong – kontrollera med vattenpass och lodlina att formen står helt rak och lodrät innan du fortsätter.',
+          'Placera armeringen centrerat i formen. Vid tunnare murar räcker ett centrerat nätlager, men från ca 20 cm tjocklek bör du istället använda dubbla nätlager – ett nära vardera formsidan – ihopbundna upptill med C-formade byglar (cc 500) så de fungerar som en sammanhängande armeringskorg. En stödmur belastas av jordtryck från sidan som vill böja och spräcka den, och behovet av armering ökar ju högre och tjockare muren är.',
           'Blanda och gjut betongen i omgångar om ca 30–50 cm åt gången, och vibrera varje lager. Vibreringen får betongen att fylla ut formen helt och driver ut luftbubblor som annars gör muren porös och svagare.',
           'Låt formen sitta kvar minst några dygn innan du river den – betongen måste hinna få tillräcklig hållfasthet för att bära sin egen vikt själv. Räkna med längre tid i kallt väder.',
           'Se till att muren har dränering bakom sig om den ska hålla emot jordmassor. Utan dränering bygger vattentryck upp bakom muren, vilket kraftigt ökar belastningen och kan få den att luta eller välta.',
