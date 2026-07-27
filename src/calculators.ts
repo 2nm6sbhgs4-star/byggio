@@ -2,6 +2,7 @@ import { altanIllustrations } from './altanIllustrations'
 import { plattaIllustrations, husgrundIllustrations, murIllustrations } from './armeringIllustrations'
 import { staketIllustrations } from './staketIllustrations'
 import { blomladorIllustrations } from './blomladorIllustrations'
+import { trappaIllustrations } from './trappaIllustrations'
 
 export type FieldOption = { value: string; label: string }
 
@@ -12,6 +13,15 @@ export type Field = {
   default?: string
   type?: 'number' | 'select'
   options?: FieldOption[]
+}
+
+export type Section = { langd: number; bredd: number }
+
+// Lets the user split a non-rectangular area (e.g. an L-formed altan) into
+// several rectangular langd×bredd sections that get summed in calculate().
+export type SectionsField = {
+  key: string
+  label: string
 }
 
 export type ResultRow = {
@@ -32,7 +42,8 @@ export type CalculatorVariant = {
   key: string
   label: string
   fields: Field[]
-  calculate: (v: Record<string, number>, raw: Record<string, string>) => ResultRow[]
+  sectionsField?: SectionsField
+  calculate: (v: Record<string, number>, raw: Record<string, string>, sections: Section[]) => ResultRow[]
   steps?: string[]
   stepIllustrations?: string[]
   tools?: Tool[]
@@ -40,7 +51,8 @@ export type CalculatorVariant = {
 
 export type CalculatorConfig = {
   fields?: Field[]
-  calculate?: (v: Record<string, number>, raw: Record<string, string>) => ResultRow[]
+  sectionsField?: SectionsField
+  calculate?: (v: Record<string, number>, raw: Record<string, string>, sections: Section[]) => ResultRow[]
   steps?: string[]
   stepIllustrations?: string[]
   tools?: Tool[]
@@ -55,10 +67,10 @@ const trallDimensioner: Record<string, { bradbredd: number; prisPerM2: number; n
 }
 
 const regelDimensioner: Record<string, { prisPerM: number; namn: string }> = {
-  '45x95': { prisPerM: 35, namn: '45×95 mm' },
-  '45x145': { prisPerM: 45, namn: '45×145 mm' },
-  '45x170': { prisPerM: 55, namn: '45×170 mm' },
-  '45x220': { prisPerM: 70, namn: '45×220 mm' },
+  '45x95': { prisPerM: 40, namn: '45×95 mm tryckimpregnerad' },
+  '45x145': { prisPerM: 52, namn: '45×145 mm tryckimpregnerad' },
+  '45x170': { prisPerM: 65, namn: '45×170 mm tryckimpregnerad' },
+  '45x220': { prisPerM: 85, namn: '45×220 mm tryckimpregnerad' },
 }
 
 const plintTyper: Record<string, { pris: number; namn: string }> = {
@@ -99,6 +111,16 @@ const bottenTyper: Record<string, { namn: string; getRows: (bottenArea: number) 
   },
 }
 
+const vangstyckeDimensioner: Record<string, { prisPerM: number; namn: string }> = {
+  '45x220': { prisPerM: 85, namn: '45×220 mm tryckimpregnerad' },
+  '45x270': { prisPerM: 105, namn: '45×270 mm tryckimpregnerad' },
+}
+
+const trappstegDimensioner: Record<string, { prisPerM: number; namn: string }> = {
+  '28x120': { prisPerM: 26, namn: '28×120 mm tryckimpregnerad' },
+  '34x120': { prisPerM: 32, namn: '34×120 mm tryckimpregnerad (kraftigare)' },
+}
+
 const fastmetoder: Record<string, { namn: string; getRows: (antalStolpar: number) => ResultRow[] }> = {
   betong: {
     namn: 'Betong',
@@ -122,9 +144,10 @@ const fastmetoder: Record<string, { namn: string; getRows: (antalStolpar: number
 
 export const calculators: Record<string, CalculatorConfig> = {
   altan: {
+    sectionsField: { key: 'sektioner', label: 'Altanens yta – dela upp i rektangulära sektioner om den inte är fyrkantig (t.ex. en för huvuddelen och en för en utbyggnad)' },
     fields: [
-      { key: 'langd', label: 'Längd', unit: 'm' },
-      { key: 'bredd', label: 'Bredd', unit: 'm' },
+      { key: 'husbredd', label: 'Husets bredd (fasaden altanen ligger mot)', unit: 'm', default: '8' },
+      { key: 'husdjup', label: 'Husets djup', unit: 'm', default: '8' },
       {
         key: 'tralldimension', label: 'Trädimension (trall)', unit: '', type: 'select', default: '28x120',
         options: [
@@ -137,17 +160,17 @@ export const calculators: Record<string, CalculatorConfig> = {
       {
         key: 'barlinadimension', label: 'Bärlinedimension (bärande, mot plintarna)', unit: '', type: 'select', default: '45x170',
         options: [
-          { value: '45x145', label: '45×145 mm' },
-          { value: '45x170', label: '45×170 mm' },
-          { value: '45x220', label: '45×220 mm' },
+          { value: '45x145', label: '45×145 mm tryckimpregnerad' },
+          { value: '45x170', label: '45×170 mm tryckimpregnerad' },
+          { value: '45x220', label: '45×220 mm tryckimpregnerad' },
         ]
       },
       {
         key: 'mellanregeldimension', label: 'Mellanregeldimension (mellan bärlinorna)', unit: '', type: 'select', default: '45x95',
         options: [
-          { value: '45x95', label: '45×95 mm' },
-          { value: '45x145', label: '45×145 mm' },
-          { value: '45x170', label: '45×170 mm' },
+          { value: '45x95', label: '45×95 mm tryckimpregnerad' },
+          { value: '45x145', label: '45×145 mm tryckimpregnerad' },
+          { value: '45x170', label: '45×170 mm tryckimpregnerad' },
         ]
       },
       {
@@ -158,7 +181,7 @@ export const calculators: Record<string, CalculatorConfig> = {
         ]
       },
     ],
-    calculate: (v, raw) => {
+    calculate: (_v, raw, sections) => {
       const regelavstand = 60
       const plintavstand = 150
 
@@ -167,17 +190,29 @@ export const calculators: Record<string, CalculatorConfig> = {
       const mellanregelInfo = regelDimensioner[raw.mellanregeldimension] ?? regelDimensioner['45x95']
       const plintInfo = plintTyper[raw.plinttyp] ?? plintTyper['betongplint']
 
-      const area = v.langd * v.bredd
-      const antalBarlinor = 2
-      const barlinorLopmeter = antalBarlinor * v.langd
-      const antalMellanreglar = Math.ceil((v.bredd * 100) / regelavstand) + 1
-      const mellanreglarLopmeter = antalMellanreglar * v.langd
+      // Each section is treated as its own rectangular deck part (bärlinor,
+      // mellanreglar, plintar) and summed, so L-formade/stegrade altaner kan
+      // byggas upp av flera enklare rektanglar.
+      let area = 0
+      let barlinorLopmeter = 0
+      let mellanreglarLopmeter = 0
+      let antalPlintar = 0
+      let antalBalkskor = 0
+
+      for (const s of sections) {
+        if (s.langd <= 0 || s.bredd <= 0) continue
+        area += s.langd * s.bredd
+        const antalBarlinor = 2
+        barlinorLopmeter += antalBarlinor * s.langd
+        const antalMellanreglar = Math.ceil((s.bredd * 100) / regelavstand) + 1
+        mellanreglarLopmeter += antalMellanreglar * s.langd
+        const plintarPerBarlina = Math.ceil((s.langd * 100) / plintavstand) + 1
+        antalPlintar += plintarPerBarlina * antalBarlinor
+        antalBalkskor += antalMellanreglar * 2
+      }
+
       const trallAtgang = area * 1.1
       const trallskruvAtgang = Math.ceil(area * 35)
-
-      const plintarPerBarlina = Math.ceil((v.langd * 100) / plintavstand) + 1
-      const antalPlintar = plintarPerBarlina * antalBarlinor
-      const antalBalkskor = antalMellanreglar * 2
 
       const ankarskruvPlint = antalPlintar * 2
       const ankarskruvBalksko = antalBalkskor * 4
@@ -216,13 +251,12 @@ export const calculators: Record<string, CalculatorConfig> = {
       {
         key: 'platta',
         label: 'Platta på mark',
+        sectionsField: { key: 'sektioner', label: 'Plattans yta – dela upp i rektangulära sektioner om den inte är fyrkantig' },
         fields: [
-          { key: 'langd', label: 'Längd', unit: 'm' },
-          { key: 'bredd', label: 'Bredd', unit: 'm' },
           { key: 'tjocklek', label: 'Tjocklek', unit: 'cm', default: '10' },
         ],
-        calculate: (v) => {
-          const area = v.langd * v.bredd
+        calculate: (v, _raw, sections) => {
+          const area = sections.reduce((sum, s) => sum + s.langd * s.bredd, 0)
           const betongVolym = area * (v.tjocklek / 100)
           const armeringArea = area * 1.1
           const antalSackar = Math.ceil(betongVolym / 0.033)
@@ -251,20 +285,19 @@ export const calculators: Record<string, CalculatorConfig> = {
       {
         key: 'husgrund',
         label: 'Husgrund',
+        sectionsField: { key: 'sektioner', label: 'Husgrundens yta – dela upp i rektangulära sektioner om den inte är fyrkantig' },
         fields: [
-          { key: 'langd', label: 'Längd', unit: 'm' },
-          { key: 'bredd', label: 'Bredd', unit: 'm' },
           { key: 'betongtjocklek', label: 'Betongtjocklek', unit: 'cm', default: '15' },
           { key: 'isoleringstjocklek', label: 'Isoleringstjocklek', unit: 'cm', default: '30' },
           { key: 'kantbalkshojd', label: 'Kantbalkens höjd', unit: 'cm', default: '30' },
         ],
-        calculate: (v) => {
-          const area = v.langd * v.bredd
+        calculate: (v, _raw, sections) => {
+          const area = sections.reduce((sum, s) => sum + s.langd * s.bredd, 0)
           const betongVolym = area * (v.betongtjocklek / 100)
           const isoleringVolym = area * (v.isoleringstjocklek / 100)
           const armeringArea = area * 1.1
 
-          const omkrets = 2 * (v.langd + v.bredd)
+          const omkrets = sections.reduce((sum, s) => sum + 2 * (s.langd + s.bredd), 0)
           const kantbalksbredd = 0.3
           const kantbalkVolym = omkrets * kantbalksbredd * (v.kantbalkshojd / 100)
           const langsjarnLopmeter = omkrets * 4 // 4 st Ø12 K-järn runt hela kantbalken
@@ -460,6 +493,79 @@ export const calculators: Record<string, CalculatorConfig> = {
       { name: 'Skruvdragare/borrmaskin', own: true },
       { name: 'Vattenpass', own: true },
       { name: 'Vinkelhake', own: true },
+    ],
+  },
+
+  trappa: {
+    fields: [
+      { key: 'hojd', label: 'Höjd att överbrygga (mark till altan/entré)', unit: 'cm' },
+      { key: 'bredd', label: 'Trappans bredd', unit: 'cm', default: '90' },
+      {
+        key: 'vangstyckedimension', label: 'Vangstycken/sidobalkar, dimension', unit: '', type: 'select', default: '45x220',
+        options: [
+          { value: '45x220', label: '45×220 mm tryckimpregnerad' },
+          { value: '45x270', label: '45×270 mm tryckimpregnerad (branta/höga trappor)' },
+        ]
+      },
+      {
+        key: 'trappstegdimension', label: 'Trappsteg, dimension', unit: '', type: 'select', default: '28x120',
+        options: [
+          { value: '28x120', label: '28×120 mm tryckimpregnerad' },
+          { value: '34x120', label: '34×120 mm tryckimpregnerad (kraftigare)' },
+        ]
+      },
+      {
+        key: 'sattsteg', label: 'Sättsteg (slutna trappsteg)', unit: '', type: 'select', default: 'nej',
+        options: [
+          { value: 'nej', label: 'Utan sättsteg (öppen trappa)' },
+          { value: 'ja', label: 'Med sättsteg (sluten trappa)' },
+        ]
+      },
+    ],
+    calculate: (v, raw) => {
+      const idealSteghojd = 17 // cm, bekväm och säker riktlinje för utomhustrappor
+      const idealStegdjup = 28 // cm
+
+      const antalSteg = Math.max(1, Math.round(v.hojd / idealSteghojd))
+      const totalLoplangd = antalSteg * idealStegdjup // cm, horisontell sträcka
+      const diagonalLangd = Math.sqrt(v.hojd ** 2 + totalLoplangd ** 2) / 100 // m
+
+      const vangstyckeInfo = vangstyckeDimensioner[raw.vangstyckedimension] ?? vangstyckeDimensioner['45x220']
+      const antalVangstycken = v.bredd > 100 ? 3 : 2
+      const vangstyckeLopmeter = antalVangstycken * diagonalLangd * 1.15 // + spill för urtagen
+
+      const trappstegInfo = trappstegDimensioner[raw.trappstegdimension] ?? trappstegDimensioner['28x120']
+      const stegBreddM = v.bredd / 100
+      const trappstegLopmeter = antalSteg * stegBreddM
+
+      const harSattsteg = raw.sattsteg === 'ja'
+      const sattstegLopmeter = antalSteg * stegBreddM
+      const skruvAtgang = antalSteg * antalVangstycken * 2 * (harSattsteg ? 2 : 1)
+
+      return [
+        { label: 'Antal steg', quantity: antalSteg, unit: 'st', decimals: 0 },
+        { label: `Vangstycken/sidobalkar (${vangstyckeInfo.namn})`, quantity: vangstyckeLopmeter, unit: 'm', decimals: 1, pricePerUnit: vangstyckeInfo.prisPerM },
+        { label: `Trappsteg (${trappstegInfo.namn})`, quantity: trappstegLopmeter, unit: 'm', decimals: 1, pricePerUnit: trappstegInfo.prisPerM },
+        ...(harSattsteg ? [{ label: `Sättsteg (${trappstegInfo.namn})`, quantity: sattstegLopmeter, unit: 'm', decimals: 1, pricePerUnit: trappstegInfo.prisPerM }] : []),
+        { label: 'Skruv (4,5×70 mm, träskruv)', quantity: skruvAtgang, unit: 'st', decimals: 0, pricePerUnit: 2 },
+      ]
+    },
+    steps: [
+      'Mät höjdskillnaden mellan marken och altanen/entrén, och bestäm trappans bredd. Höjden avgör hur många steg du behöver – sikta på en steghöjd runt 17 cm och stegdjup runt 28 cm för en bekväm och säker utomhustrappa.',
+      'Rita upp och såga ut vangstyckena (sidobalkarna) med jämnt fördelade urtag enligt beräknad steghöjd och stegdjup. Vangstyckena är trappans bärande del och tar hela lasten, så använd en rejäl dimension och kontrollera att alla urtag blir exakt lika – annars blir stegen ojämna och trappan farlig att gå i.',
+      'Montera vangstyckena i rätt lutning, förankrade både mot marken (på plint eller betongfot) och mot altanen/entrén, så de inte kan glida eller vandra i sidled. Är trappan bredare än en meter behövs ett tredje vangstycke i mitten som extra stöd.',
+      'Skruva fast trappstegen i vangstyckenas urtag, ett i taget nedifrån och upp, och kontrollera med vattenpass att varje steg blir vågrätt och alla steg får samma höjd.',
+      'Vill du ha en sluten trappa: skruva fast sättsteg (de vertikala brädorna) mellan varje trappsteg innan nästa trappsteg monteras ovanpå.',
+      'Montera räcke eller ledstång om trappan är hög eller brant – kontrollera lokala byggregler för när räcke krävs (ofta redan från tre-fyra steg).',
+    ],
+    stepIllustrations: trappaIllustrations,
+    tools: [
+      { name: 'Kap- och geringssåg (för exakta urtag)', pricePerDay: 250 },
+      { name: 'Cirkelsåg', own: true },
+      { name: 'Sticksåg (för urtag)', own: true },
+      { name: 'Vinkelhake', own: true },
+      { name: 'Vattenpass', own: true },
+      { name: 'Skruvdragare/borrmaskin', own: true },
     ],
   },
 }

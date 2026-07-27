@@ -21,7 +21,7 @@ export function isoBox(
   cx: number, cy: number,
   x0: number, y0: number, z0: number,
   X: number, Y: number, H: number,
-  c: IsoColors, strokeWidth = 1.5, opacity = 1
+  c: IsoColors, strokeWidth = 1.5, opacity = 1, includeTop = true
 ) {
   const p = (x: number, y: number, z: number) => isoPt(cx, cy, x0 + x, y0 + y, z0 + z)
   const top = poly([p(0, 0, H), p(X, 0, H), p(X, Y, H), p(0, Y, H)])
@@ -30,7 +30,7 @@ export function isoBox(
   const op = opacity < 1 ? ` fill-opacity="${opacity}"` : ''
   return `<polygon points="${left}" fill="${c.left}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linejoin="round"${op}/>` +
     `<polygon points="${right}" fill="${c.right}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linejoin="round"${op}/>` +
-    `<polygon points="${top}" fill="${c.top}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linejoin="round"${op}/>`
+    (includeTop ? `<polygon points="${top}" fill="${c.top}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linejoin="round"${op}/>` : '')
 }
 
 // A hollow rectangular border made of four beams (formwork, edge elements, frames).
@@ -125,7 +125,7 @@ export function isoSvg(inner: string, viewBox = '0 0 220 150') {
 
 export const palette = {
   gravel: { top: '#cbd5e1', left: '#94a3b8', right: '#64748b' } as IsoColors,
-  ground: { top: '#b6c2d1', left: '#94a3b8', right: '#64748b' } as IsoColors,
+  ground: { top: '#a6805a', left: '#8a6a48', right: '#6b5138' } as IsoColors,
   concrete: { top: '#e8edf3', left: '#cbd5e1', right: '#94a3b8' } as IsoColors,
   wetConcrete: { top: '#e2e8f0', left: '#cbd5e1', right: '#94a3b8' } as IsoColors,
   wood: { top: '#fdba74', left: '#f97316', right: '#c2410c' } as IsoColors,

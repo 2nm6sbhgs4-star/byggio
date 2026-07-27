@@ -1,61 +1,105 @@
+import { isoBox, isoPost, isoDot, isoShadow, isoPt, isoSvg, palette } from './isoHelpers'
+
+// Shared footprint: one bay of fence between two posts.
+const CX = 90
+const CY = 126
+const SPAN = 4.2
+const POST = 0.28
+const POST_H = 40 // pixels
+const POST_Y = 0.5
+
+function post(x0: number, h: number) {
+  return isoBox(CX, CY, x0, POST_Y, 0, POST, POST, h, palette.wood)
+}
+
+function twoPosts(h: number) {
+  return post(0, h) + post(SPAN - POST, h)
+}
+
+function concreteCollar() {
+  const collar = (x0: number) => isoBox(CX, CY, x0 - 0.12, POST_Y - 0.12, 0, POST + 0.24, POST + 0.24, 7, palette.concrete)
+  return collar(0) + collar(SPAN - POST)
+}
+
+function dashedLine(x0: number, x1: number, y: number, z: number, stroke: string, width = 2) {
+  const [ax1, ay1] = isoPt(CX, CY, x0, y, z)
+  const [ax2, ay2] = isoPt(CX, CY, x1, y, z)
+  return `<line x1="${ax1.toFixed(1)}" y1="${ay1.toFixed(1)}" x2="${ax2.toFixed(1)}" y2="${ay2.toFixed(1)}" stroke="${stroke}" stroke-width="${width}" stroke-dasharray="6 5" stroke-linecap="round"/>`
+}
+
+function hole(x0: number) {
+  const [cx, cy] = isoPt(CX, CY, x0 + POST / 2, POST_Y + POST / 2, 0)
+  return `<ellipse cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="13" ry="6" fill="none" stroke="#475569" stroke-width="2.5"/>` +
+    dashedLine(x0 + POST / 2, x0 + POST / 2, POST_Y + POST / 2, -22, '#475569', 2)
+}
+
+function spiritLevel(x: number) {
+  const [px, py] = isoPt(CX, CY, x, POST_Y - 0.5, POST_H * 0.55)
+  return `<rect x="${(px - 17).toFixed(1)}" y="${(py - 5).toFixed(1)}" width="34" height="10" rx="5" fill="none" stroke="#0f172a" stroke-width="2" transform="rotate(-14 ${px.toFixed(1)} ${py.toFixed(1)})"/>` +
+    `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="3" fill="#38bdf8" transform="rotate(-14 ${px.toFixed(1)} ${py.toFixed(1)})"/>`
+}
+
+function rails(h1: number, h2: number) {
+  return isoBox(CX, CY, 0, POST_Y + 0.04, h1, SPAN, 0.2, 5, palette.wood) +
+    isoBox(CX, CY, 0, POST_Y + 0.04, h2, SPAN, 0.2, 5, palette.wood)
+}
+
+function boards() {
+  let out = ''
+  const step = 0.34
+  for (let x = 0.1; x < SPAN - 0.1; x += step) {
+    out += isoBox(CX, CY, x, POST_Y - 0.14, 0, 0.22, 0.12, POST_H, palette.planterWood, 1.2)
+  }
+  return out
+}
+
 export const staketIllustrations: string[] = [
   // 1. Markera sträckning med snöre, mät ut stolpplacering
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <line x1="20" y1="110" x2="180" y2="110" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-    <line x1="30" y1="105" x2="170" y2="105" stroke="#f97316" stroke-width="2" stroke-dasharray="6 5"/>
-    <rect x="26" y="95" width="8" height="15" fill="#0f172a"/>
-    <rect x="166" y="95" width="8" height="15" fill="#0f172a"/>
-    <path d="M90 80 v-15 M82 65 h16" stroke="#475569" stroke-width="2"/>
-  </svg>`,
-
+  isoSvg(
+    isoShadow(CX, CY, -0.4, 0, SPAN + 0.8, 1.2, 0.1) +
+    isoBox(CX, CY, -0.4, 0, 0, SPAN + 0.8, 1.2, 2, palette.ground) +
+    dashedLine(0.15, SPAN - 0.15, POST_Y + POST / 2, 3, '#f97316', 2.2) +
+    isoPost(CX, CY, 0.15, POST_Y + POST / 2, 2, 15, '#0f172a', 3) +
+    isoPost(CX, CY, SPAN - 0.15, POST_Y + POST / 2, 2, 15, '#0f172a', 3)
+  ),
   // 2. Gräv eller borra hål för stolparna
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <line x1="20" y1="115" x2="180" y2="115" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-    <ellipse cx="100" cy="115" rx="22" ry="7" fill="none" stroke="#475569" stroke-width="3"/>
-    <path d="M78 115 q22 22 44 0" fill="none" stroke="#475569" stroke-width="3"/>
-    <path d="M100 60 v45" stroke="#0f172a" stroke-width="3" stroke-dasharray="4 4"/>
-    <path d="M92 60 h16" stroke="#0f172a" stroke-width="2"/>
-  </svg>`,
-
+  isoSvg(
+    isoShadow(CX, CY, -0.4, 0, SPAN + 0.8, 1.2, 0.1) +
+    isoBox(CX, CY, -0.4, 0, 0, SPAN + 0.8, 1.2, 2, palette.ground) +
+    hole(0) +
+    hole(SPAN - POST)
+  ),
   // 3. Sätt stolparna i våg, gjut eller packa fast
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="93" y="30" width="14" height="85" fill="#f97316"/>
-    <ellipse cx="100" cy="112" rx="26" ry="8" fill="#cbd5e1"/>
-    <circle cx="65" cy="45" r="10" fill="none" stroke="#0f172a" stroke-width="2"/>
-    <path d="M60 45 h10 M65 40 v10" stroke="#0f172a" stroke-width="2"/>
-  </svg>`,
-
+  isoSvg(
+    isoShadow(CX, CY, -0.4, 0, SPAN + 0.8, 1.2, 0.12) +
+    isoBox(CX, CY, -0.4, 0, 0, SPAN + 0.8, 1.2, 2, palette.ground) +
+    concreteCollar() +
+    twoPosts(POST_H)
+  ),
   // 4. Låt stolparna stå stadigt innan du fortsätter
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="53" y="30" width="14" height="85" fill="#f97316"/>
-    <rect x="133" y="30" width="14" height="85" fill="#f97316"/>
-    <ellipse cx="60" cy="112" rx="24" ry="7" fill="#cbd5e1"/>
-    <ellipse cx="140" cy="112" rx="24" ry="7" fill="#cbd5e1"/>
-    <path d="M155 55 a15 15 0 1 1 -0.1 0" fill="none" stroke="#0f172a" stroke-width="2"/>
-    <path d="M155 48 v8 l6 4" stroke="#0f172a" stroke-width="2" fill="none"/>
-  </svg>`,
-
+  isoSvg(
+    isoShadow(CX, CY, -0.4, 0, SPAN + 0.8, 1.2, 0.12) +
+    isoBox(CX, CY, -0.4, 0, 0, SPAN + 0.8, 1.2, 2, palette.ground) +
+    concreteCollar() +
+    twoPosts(POST_H) +
+    spiritLevel(SPAN * 0.5)
+  ),
   // 5. Montera vågräta reglar mellan stolparna
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="35" y="25" width="14" height="90" fill="#94a3b8"/>
-    <rect x="151" y="25" width="14" height="90" fill="#94a3b8"/>
-    <rect x="35" y="45" width="130" height="10" fill="#f97316"/>
-    <rect x="35" y="95" width="130" height="10" fill="#f97316"/>
-  </svg>`,
-
+  isoSvg(
+    isoShadow(CX, CY, -0.4, 0, SPAN + 0.8, 1.2, 0.12) +
+    isoBox(CX, CY, -0.4, 0, 0, SPAN + 0.8, 1.2, 2, palette.ground) +
+    twoPosts(POST_H) +
+    rails(8, 28)
+  ),
   // 6. Skruva fast brädorna med jämna mellanrum
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="20" y="55" width="160" height="8" fill="#94a3b8"/>
-    <rect x="20" y="95" width="160" height="8" fill="#94a3b8"/>
-    <rect x="30" y="25" width="16" height="90" fill="#f97316"/>
-    <rect x="58" y="25" width="16" height="90" fill="#f97316"/>
-    <rect x="86" y="25" width="16" height="90" fill="#f97316"/>
-    <rect x="114" y="25" width="16" height="90" fill="#f97316"/>
-    <rect x="142" y="25" width="16" height="90" fill="#f97316"/>
-    <circle cx="38" cy="59" r="2" fill="#0f172a"/>
-    <circle cx="66" cy="59" r="2" fill="#0f172a"/>
-    <circle cx="94" cy="59" r="2" fill="#0f172a"/>
-    <circle cx="122" cy="59" r="2" fill="#0f172a"/>
-    <circle cx="150" cy="59" r="2" fill="#0f172a"/>
-  </svg>`,
+  isoSvg(
+    isoShadow(CX, CY, -0.4, 0, SPAN + 0.8, 1.2, 0.12) +
+    isoBox(CX, CY, -0.4, 0, 0, SPAN + 0.8, 1.2, 2, palette.ground) +
+    twoPosts(POST_H) +
+    rails(8, 28) +
+    boards() +
+    isoDot(CX, CY, 0.4, POST_Y - 0.08, 8, 1.6, '#0f172a') +
+    isoDot(CX, CY, 1.5, POST_Y - 0.08, 28, 1.6, '#0f172a') +
+    isoDot(CX, CY, 2.9, POST_Y - 0.08, 8, 1.6, '#0f172a')
+  ),
 ]

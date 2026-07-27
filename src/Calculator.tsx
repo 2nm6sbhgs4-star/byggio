@@ -1,12 +1,30 @@
 import { useState } from 'react'
-import type { CalculatorConfig, CalculatorVariant, Field, ResultRow, Tool } from './calculators'
+import type { CalculatorConfig, CalculatorVariant, Field, ResultRow, Section, SectionsField, Tool } from './calculators'
 import { useAuth } from './AuthContext'
 import { saveProject } from './savedProjects'
 import PublishRequestForm from './PublishRequestForm'
+import HousePreview from './HousePreview'
 
-function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, projectSlug, projectTitle, variantLabel, variantKey, initialValues }: {
+type SectionInput = { langd: string; bredd: string }
+
+// Recognized by key so the altan calculator can render them next to the
+// bird's-eye preview instead of mixed into the regular material fields.
+const HOUSE_FIELD_KEYS = ['husbredd', 'husdjup']
+
+function parseSections(raw: string | undefined): SectionInput[] {
+  if (!raw) return [{ langd: '', bredd: '' }]
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : [{ langd: '', bredd: '' }]
+  } catch {
+    return [{ langd: '', bredd: '' }]
+  }
+}
+
+function CalculatorForm({ fields, sectionsField, calculate, steps, stepIllustrations, tools, projectSlug, projectTitle, variantLabel, variantKey, initialValues }: {
   fields: Field[]
-  calculate: (v: Record<string, number>, raw: Record<string, string>) => ResultRow[]
+  sectionsField?: SectionsField
+  calculate: (v: Record<string, number>, raw: Record<string, string>, sections: Section[]) => ResultRow[]
   steps?: string[]
   stepIllustrations?: string[]
   tools?: Tool[]
@@ -22,16 +40,29 @@ function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, pr
 
   const initial: Record<string, string> = {}
   fields.forEach((f) => { initial[f.key] = initialValues?.[f.key] ?? f.default ?? '' })
+  if (sectionsField) initial[sectionsField.key] = initialValues?.[sectionsField.key] ?? ''
   const [values, setValues] = useState(initial)
 
   const numericValues: Record<string, number> = {}
   fields.forEach((f) => { numericValues[f.key] = parseFloat(values[f.key]) || 0 })
 
-  const harResultat = fields
+  const sections = sectionsField ? parseSections(values[sectionsField.key]) : []
+  const setSections = (next: SectionInput[]) => {
+    if (!sectionsField) return
+    setValues({ ...values, [sectionsField.key]: JSON.stringify(next) })
+  }
+  const numericSections: Section[] = sections.map((s) => ({ langd: parseFloat(s.langd) || 0, bredd: parseFloat(s.bredd) || 0 }))
+
+  const houseFields = sectionsField ? fields.filter((f) => HOUSE_FIELD_KEYS.includes(f.key)) : []
+  const regularFields = fields.filter((f) => !houseFields.includes(f))
+
+  const harFalten = fields
     .filter((f) => f.type !== 'select' && !f.default)
     .every((f) => numericValues[f.key] > 0)
+  const harSektioner = !sectionsField || numericSections.every((s) => s.langd > 0 && s.bredd > 0)
+  const harResultat = harFalten && harSektioner
 
-  const results = harResultat ? calculate(numericValues, values) : []
+  const results = harResultat ? calculate(numericValues, values, numericSections) : []
   const totalPris = results.reduce((sum, r) => sum + (r.pricePerUnit ? r.quantity * r.pricePerUnit : 0), 0)
   const harPriser = results.some((r) => r.pricePerUnit)
 
@@ -70,8 +101,56 @@ function CalculatorForm({ fields, calculate, steps, stepIllustrations, tools, pr
       </div>
 
       <div className="calculator-main">
+        {sectionsField && (
+          <div className="sections-block">
+            <label className="sections-label">{sectionsField.label}</label>
+            {sections.map((s, i) => (
+              <div className="section-row" key={i}>
+                <input
+                  type="number"
+                  value={s.langd}
+                  onChange={(e) => setSections(sections.map((row, j) => j === i ? { ...row, langd: e.target.value } : row))}
+                  placeholder="Längd (m)"
+                />
+                <span className="section-times">×</span>
+                <input
+                  type="number"
+                  value={s.bredd}
+                  onChange={(e) => setSections(sections.map((row, j) => j === i ? { ...row, bredd: e.target.value } : row))}
+                  placeholder="Bredd (m)"
+                />
+                {sections.length > 1 && (
+                  <button type="button" className="section-remove" onClick={() => setSections(sections.filter((_, j) => j !== i))} aria-label="Ta bort sektion">✕</button>
+                )}
+              </div>
+            ))}
+            <button type="button" className="section-add" onClick={() => setSections([...sections, { langd: '', bredd: '' }])}>+ Lägg till sektion</button>
+          </div>
+        )}
+
+        {houseFields.length > 0 && (
+          <div className="house-fields">
+            {houseFields.map((f) => (
+              <label key={f.key}>
+                {f.label} {f.unit && `(${f.unit})`}
+                <input
+                  type="number"
+                  value={values[f.key]}
+                  onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                  placeholder="t.ex. 10"
+                />
+              </label>
+            ))}
+            <HousePreview
+              houseWidth={parseFloat(values.husbredd) || 0}
+              houseDepth={parseFloat(values.husdjup) || 0}
+              sections={numericSections}
+            />
+          </div>
+        )}
+
         <div className="form-grid">
-          {fields.map((f) => (
+          {regularFields.map((f) => (
             <label key={f.key}>
               {f.label} {f.unit && `(${f.unit})`}
               {f.type === 'select' ? (
@@ -219,6 +298,7 @@ function Calculator({ config, projectSlug, projectTitle, initialValues, initialV
         <CalculatorForm
           key={activeVariant.key}
           fields={activeVariant.fields}
+          sectionsField={activeVariant.sectionsField}
           calculate={activeVariant.calculate}
           steps={activeVariant.steps}
           stepIllustrations={activeVariant.stepIllustrations}
@@ -233,6 +313,7 @@ function Calculator({ config, projectSlug, projectTitle, initialValues, initialV
         config.fields && config.calculate && (
           <CalculatorForm
             fields={config.fields}
+            sectionsField={config.sectionsField}
             calculate={config.calculate}
             steps={config.steps}
             stepIllustrations={config.stepIllustrations}

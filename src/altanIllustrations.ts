@@ -1,61 +1,114 @@
+import { isoBox, isoPost, isoDot, isoOutline, isoShadow, isoPt, isoSvg, palette } from './isoHelpers'
+
+// Shared footprint for the deck illustrations.
+const CX = 108
+const CY = 122
+const BX = 4.2
+const BY = 3
+const PIER_H = 10
+const BARLINA_H = 6
+const MELLANREGEL_H = 5
+const TRALL_H = 4
+
+function piers() {
+  const xs = [0.3, BX / 2, BX - 0.3]
+  const ys = [0.3, BY - 0.3]
+  let out = ''
+  for (const y of ys) {
+    for (const x of xs) {
+      out += isoBox(CX, CY, x - 0.17, y - 0.17, 0, 0.34, 0.34, PIER_H, palette.concrete)
+    }
+  }
+  return out
+}
+
+function barlinor() {
+  return isoBox(CX, CY, 0, 0.3 - 0.16, PIER_H, BX, 0.32, BARLINA_H, palette.wood) +
+    isoBox(CX, CY, 0, BY - 0.3 - 0.16, PIER_H, BX, 0.32, BARLINA_H, palette.wood)
+}
+
+function mellanreglar() {
+  let out = ''
+  const stepsX = 5
+  for (let i = 0; i <= stepsX; i++) {
+    const x = (BX / stepsX) * i
+    out += isoBox(CX, CY, x - 0.09, 0, PIER_H + BARLINA_H, 0.18, BY, MELLANREGEL_H, palette.wood, 1.2)
+  }
+  return out
+}
+
+const TRALL_Z = PIER_H + BARLINA_H + MELLANREGEL_H
+
+function trallSeams() {
+  let out = ''
+  const boards = 9
+  for (let i = 1; i < boards; i++) {
+    const y = (BY / boards) * i
+    const [x1, y1] = isoPt(CX, CY, 0, y, TRALL_Z + TRALL_H)
+    const [x2, y2] = isoPt(CX, CY, BX, y, TRALL_Z + TRALL_H)
+    out += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#b8834f" stroke-width="1"/>`
+  }
+  return out
+}
+
+function circularSaw() {
+  const [px, py] = isoPt(CX, CY, BX * 0.72, -0.35, TRALL_Z + TRALL_H + 14)
+  return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="9" fill="none" stroke="#0f172a" stroke-width="2"/>` +
+    `<rect x="${(px - 3).toFixed(1)}" y="${(py + 6).toFixed(1)}" width="6" height="12" rx="1.5" fill="#f97316" stroke="#0f172a" stroke-width="1.5"/>`
+}
+
 export const altanIllustrations: string[] = [
-  // Steg 1: Markera läge
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <line x1="20" y1="120" x2="180" y2="120" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-    <rect x="50" y="60" width="100" height="50" fill="none" stroke="#f97316" stroke-width="3" stroke-dasharray="8 6"/>
-    <line x1="50" y1="60" x2="30" y2="40" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
-    <rect x="24" y="30" width="16" height="12" fill="#f97316"/>
-    <path d="M100 60 v-15 M92 45 h16" stroke="#475569" stroke-width="2"/>
-  </svg>`,
-
-  // Steg 2: Gräv och lägg plintar
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <line x1="20" y1="115" x2="180" y2="115" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
-    <ellipse cx="70" cy="115" rx="26" ry="8" fill="none" stroke="#475569" stroke-width="3"/>
-    <path d="M50 115 q20 20 40 0" fill="none" stroke="#475569" stroke-width="3"/>
-    <rect x="120" y="85" width="30" height="30" rx="2" fill="#f97316"/>
-    <rect x="126" y="70" width="18" height="16" fill="#0f172a"/>
-  </svg>`,
-
-  // Steg 3: Montera bärande reglar
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="30" y="95" width="24" height="25" fill="#94a3b8"/>
-    <rect x="146" y="95" width="24" height="25" fill="#94a3b8"/>
-    <rect x="25" y="80" width="150" height="16" rx="2" fill="#f97316"/>
-    <line x1="42" y1="120" x2="42" y2="130" stroke="#0f172a" stroke-width="3"/>
-    <line x1="158" y1="120" x2="158" y2="130" stroke="#0f172a" stroke-width="3"/>
-  </svg>`,
-
-  // Steg 4: Mellanreglar med avstånd
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="20" y="30" width="160" height="14" rx="2" fill="#f97316"/>
-    <rect x="20" y="63" width="160" height="14" rx="2" fill="#f97316"/>
-    <rect x="20" y="96" width="160" height="14" rx="2" fill="#f97316"/>
-    <line x1="190" y1="44" x2="190" y2="63" stroke="#0f172a" stroke-width="2"/>
-    <path d="M186 44 h8 M186 63 h8" stroke="#0f172a" stroke-width="2"/>
-  </svg>`,
-
-  // Steg 5: Trall skruvas fast
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="20" y="70" width="160" height="12" fill="#94a3b8"/>
-    <rect x="20" y="100" width="160" height="12" fill="#94a3b8"/>
-    <rect x="30" y="40" width="18" height="80" fill="#f97316"/>
-    <rect x="60" y="40" width="18" height="80" fill="#f97316"/>
-    <rect x="90" y="40" width="18" height="80" fill="#f97316"/>
-    <rect x="120" y="40" width="18" height="80" fill="#f97316"/>
-    <rect x="150" y="40" width="18" height="80" fill="#f97316"/>
-    <circle cx="39" cy="76" r="2.5" fill="#0f172a"/>
-    <circle cx="69" cy="76" r="2.5" fill="#0f172a"/>
-    <circle cx="99" cy="76" r="2.5" fill="#0f172a"/>
-    <circle cx="129" cy="76" r="2.5" fill="#0f172a"/>
-    <circle cx="159" cy="76" r="2.5" fill="#0f172a"/>
-  </svg>`,
-
-  // Steg 6: Såga kanter / kantlist
-  `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
-    <rect x="20" y="60" width="160" height="40" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
-    <line x1="140" y1="55" x2="140" y2="105" stroke="#f97316" stroke-width="3" stroke-dasharray="4 4"/>
-    <path d="M120 45 l30 15 l-30 15 z" fill="#0f172a"/>
-    <rect x="136" y="95" width="10" height="18" fill="#f97316"/>
-  </svg>`,
+  // 1. Markera altanens läge
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY, 0.1) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 2, palette.ground) +
+    isoOutline(CX, CY, 0.25, 0.25, 2.3, BX - 0.5, BY - 0.5, '#f97316', { dash: '5 4' }) +
+    isoPost(CX, CY, 0.25, 0.25, 2, 16, '#0f172a', 3) +
+    isoPost(CX, CY, BX - 0.25, BY - 0.25, 2, 16, '#0f172a', 3)
+  ),
+  // 2. Gräv och lägg plintar
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY, 0.1) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 2, palette.ground) +
+    piers()
+  ),
+  // 3. Montera bärlinorna på plintarna
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY, 0.12) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 2, palette.ground) +
+    piers() +
+    barlinor()
+  ),
+  // 4. Lägg mellanreglarna tvärs över
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY, 0.12) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 2, palette.ground) +
+    piers() +
+    barlinor() +
+    mellanreglar()
+  ),
+  // 5. Skruva fast trallen
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY, 0.12) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 2, palette.ground) +
+    piers() +
+    barlinor() +
+    mellanreglar() +
+    isoBox(CX, CY, 0, 0, TRALL_Z, BX, BY, TRALL_H, palette.planterWood) +
+    trallSeams() +
+    isoDot(CX, CY, 1.2, 0.9, TRALL_Z + TRALL_H, 1.8, '#5c4a3a') +
+    isoDot(CX, CY, 2.6, 1.9, TRALL_Z + TRALL_H, 1.8, '#5c4a3a')
+  ),
+  // 6. Såga kanter, montera kantlist
+  isoSvg(
+    isoShadow(CX, CY, 0, 0, BX, BY, 0.12) +
+    isoBox(CX, CY, 0, 0, 0, BX, BY, 2, palette.ground) +
+    piers() +
+    barlinor() +
+    mellanreglar() +
+    isoBox(CX, CY, 0, 0, TRALL_Z, BX, BY, TRALL_H, palette.planterWood) +
+    trallSeams() +
+    isoOutline(CX, CY, 0, 0, TRALL_Z + TRALL_H + 0.5, BX, 0.05, '#f97316', { strokeWidth: 3, fill: '#f97316' }) +
+    circularSaw()
+  ),
 ]
