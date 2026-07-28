@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import Navbar from './Navbar'
 import ProjectCards from './ProjectCards'
 import ProjectPage from './ProjectPage'
@@ -46,6 +47,7 @@ function App() {
       </Routes>
       <Footer />
       <CookieConsent />
+      <Analytics />
     </div>
   )
 }
